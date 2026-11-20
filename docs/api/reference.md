@@ -69,3 +69,15 @@ dependência de leitor de PDF.
 O quadro traz ainda as colunas de proveniência (`url`, `updated_at`, `source_key`,
 `package_version`, `ingestion_run_id`, `content_hash`). O arquivo é guardado em cache por dia
 de referência: duas leituras no mesmo dia baixam uma vez.
+
+---
+
+## Módulo: `ingestion.sgs`
+
+Leitura de séries temporais do SGS (Sistema Gerenciador de Séries Temporais) do Banco Central.
+
+### `read_sgs_series(int_code, *, dt_start, dt_end, path_cache_dir, fn_download=..., bool_use_cache=True) -> pd.DataFrame`
+
+Devolve `data` (`date`) e `valor` (`Decimal`), mais as colunas de proveniência. Intervalos
+maiores que 10 anos são divididos em janelas e concatenados. O valor é construído a partir do
+texto da fonte, nunca de `float`.
