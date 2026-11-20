@@ -3,6 +3,7 @@
 from importlib.metadata import PackageNotFoundError, version
 
 from .ingestion.banks import read_banks
+from .ingestion.sgs import read_sgs_series
 from .main import main
 
 
@@ -16,4 +17,5 @@ __all__ = [
     "__version__",
     "main",
     "read_banks",
+    "read_sgs_series",
 ]
