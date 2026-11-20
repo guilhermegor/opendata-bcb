@@ -103,3 +103,24 @@ levanta `FileNotFoundError`. Qualquer outra falha (5xx, timeout, erro de escrita
 
 Campos em branco na fonte (algumas linhas legadas) viram `NA`. O quadro traz ainda as colunas
 de proveniência e o arquivo é guardado em cache por dia de referência.
+
+---
+
+## Boletins de cotação
+
+Códigos de moeda aceitos pelo formulário de boletins de cotação do Banco Central.
+
+### `read_quote_bulletin_codes(*, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
+
+Lê as opções do `<select name="ChkMoeda">` do formulário
+`https://ptax.bcb.gov.br/ptax_internet/consultaBoletim.do`. Se o `<select>` sumir ou vier vazio
+(mudança de marcação), levanta `ContractError` em vez de devolver um quadro vazio.
+
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `code` | `string` | Valor da opção, o código que a consulta de boletim recebe |
+| `name` | `string` | Rótulo da moeda, como a fonte o escreve |
+
+O quadro traz ainda as colunas de proveniência (`url`, `updated_at`, `source_key`,
+`package_version`, `ingestion_run_id`, `content_hash`). A página é guardada em cache por dia de
+referência.
