@@ -7,4 +7,5 @@
 - [x] Offline tests on a trimmed real fixture
 - [x] Docs: reference and example (pt-BR)
 - [ ] Rates/quotes as `Decimal`: not applicable to this table (belongs to #10)
-- [ ] README mention, left to the merge pass
+- [x] README: readers listed in Funcionalidades (merge pass)
+- [x] Fall back only on a 404; any other download failure raises (CodeRabbit review)

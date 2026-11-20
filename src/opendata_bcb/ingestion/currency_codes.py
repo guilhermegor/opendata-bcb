@@ -51,7 +51,13 @@ def _try_download(
     Returns
     -------
     tuple of (pathlib.Path, str) or None
-        The cached file and the URL it came from.
+        The cached file and the URL it came from, or ``None`` when the source answers 404.
+
+    Raises
+    ------
+    OSError
+        On any other download failure (5xx, timeout, write error), which must not be mistaken
+        for a missing day and silently fall back to an older file.
     """
     str_url = URL_CURRENCY_CODES.format(dt=dt_day)
     try:
@@ -64,7 +70,7 @@ def _try_download(
             bool_use_cache=bool_use_cache,
             fn_download=fn_download,
         )
-    except OSError:
+    except FileNotFoundError:
         return None
     return path_csv, str_url
 

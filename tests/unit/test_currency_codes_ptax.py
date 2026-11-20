@@ -55,11 +55,11 @@ def _download_from_19th(  # complexity-ok: stand-in answering 404 for every othe
 
     Raises
     ------
-    OSError
+    FileNotFoundError
         For any other day.
     """
     if "M20261119" not in str_url:
-        raise OSError("status 404")
+        raise FileNotFoundError("status 404")
     return _fake_download(str_url=str_url, path_dest=path_dest)
 
 
@@ -80,10 +80,10 @@ def _always_missing(*, str_url: str, path_dest: Path) -> Path:
 
     Raises
     ------
-    OSError
+    FileNotFoundError
         Always.
     """
-    raise OSError("status 404")
+    raise FileNotFoundError("status 404")
 
 
 def _broken_download(*, str_url: str, path_dest: Path) -> Path:
@@ -183,6 +183,36 @@ def test_read_currency_codes_no_file_anywhere_raises(tmp_path: Path) -> None:
         read_currency_codes(
             dt_reference=DT_DAY, path_cache_dir=tmp_path, fn_download=_always_missing
         )
+
+
+def _server_error(*, str_url: str, path_dest: Path) -> Path:
+    """Fail like a source answering 503: a broken transfer, not a missing file.
+
+    Parameters
+    ----------
+    str_url : str
+        Ignored.
+    path_dest : pathlib.Path
+        Ignored.
+
+    Returns
+    -------
+    pathlib.Path
+        Never returned.
+
+    Raises
+    ------
+    OSError
+        Always.
+    """
+    raise OSError("status 503")
+
+
+def test_read_currency_codes_server_error_does_not_fall_back(tmp_path: Path) -> None:
+    """A 503 surfaces as a failure instead of silently serving an older day's file."""
+    fn_failing = Mock(side_effect=_server_error)
+    with pytest.raises(OSError, match="503"):
+        read_currency_codes(dt_reference=DT_DAY, path_cache_dir=tmp_path, fn_download=fn_failing)
 
 
 def test_read_currency_codes_second_call_hits_daily_cache(tmp_path: Path) -> None:

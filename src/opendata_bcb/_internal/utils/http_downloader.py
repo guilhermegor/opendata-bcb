@@ -15,6 +15,7 @@ NOT followed (a redirect could hop to an internal target that bypasses the up-fr
 
 from __future__ import annotations
 
+from http import HTTPStatus
 from http.client import HTTPMessage, HTTPResponse
 import ipaddress
 from pathlib import Path
@@ -201,8 +202,12 @@ def _fetch_bytes(
 
     Raises
     ------
+    FileNotFoundError
+        When the server answers 404, so a caller can tell "the source has no such file" from a
+        failed transfer (``FileNotFoundError`` is an ``OSError``, so existing handlers still
+        catch it).
     OSError
-        On a non-2xx status or any transport failure.
+        On any other non-2xx status or transport failure.
     """
     cls_request = request.Request(str_url, method="GET")  # noqa: S310
     try:
@@ -211,6 +216,10 @@ def _fetch_bytes(
             if not _HTTP_OK_MIN <= int_status <= _HTTP_OK_MAX:
                 raise OSError(f"Download returned status {int_status} for {str_url!r}")
             return cls_response.read()
+    except error.HTTPError as cls_err:
+        if cls_err.code == HTTPStatus.NOT_FOUND:
+            raise FileNotFoundError(f"Not found (404): {str_url!r}") from cls_err
+        raise OSError(f"Failed to download {str_url!r}: {cls_err}") from cls_err
     except error.URLError as cls_err:
         raise OSError(f"Failed to download {str_url!r}: {cls_err}") from cls_err
 
