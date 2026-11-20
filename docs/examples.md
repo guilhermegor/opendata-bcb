@@ -71,3 +71,14 @@ df_codes = read_currency_codes()
 # O código é texto de 3 dígitos; comparar com número perderia o zero à esquerda.
 print(df_codes.loc[df_codes["is_active"], ["currency_code", "symbol", "name"]])
 ```
+
+## Receita: listar os códigos de moeda dos boletins de cotação
+
+```python
+from opendata_bcb import read_quote_bulletin_codes
+
+
+df_codes = read_quote_bulletin_codes()
+# O código é texto: é o valor que o formulário do BCB espera, sem conversão numérica.
+print(df_codes.loc[df_codes["name"].str.contains("ZLOTY"), ["code", "name"]])
+```

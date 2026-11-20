@@ -12,6 +12,9 @@ from __future__ import annotations
 from opendata_bcb._internal.config.contracts.banks import CONTRACT_BANKS
 from opendata_bcb._internal.config.contracts.currency_codes import CONTRACT_CURRENCY_CODES
 from opendata_bcb._internal.config.contracts.ptax_usd_brl import PTAX_USD_BRL
+from opendata_bcb._internal.config.contracts.quote_bulletins import (
+    CONTRACT_QUOTE_BULLETIN_CODES,
+)
 from opendata_bcb._internal.utils.tabular_reader import (
     ContractError,
     FileContract,  # noqa: TID251 -- contracts are constructed here
@@ -23,6 +26,7 @@ from opendata_bcb._internal.utils.tabular_reader import (
 __all__ = [
     "CONTRACT_BANKS",
     "CONTRACT_CURRENCY_CODES",
+    "CONTRACT_QUOTE_BULLETIN_CODES",
     "ContractError",
     "FileContract",
     "find_contract_problems",

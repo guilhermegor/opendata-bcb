@@ -4,6 +4,7 @@ from importlib.metadata import PackageNotFoundError, version
 
 from .ingestion.banks import read_banks
 from .ingestion.currency_codes import read_currency_codes
+from .ingestion.quote_bulletins import read_quote_bulletin_codes
 from .ingestion.sgs import read_sgs_series
 from .main import main
 
@@ -20,4 +21,5 @@ __all__ = [
     "read_banks",
     "read_currency_codes",
     "read_sgs_series",
+    "read_quote_bulletin_codes",
 ]
