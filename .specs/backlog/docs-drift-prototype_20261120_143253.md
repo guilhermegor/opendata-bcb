@@ -92,7 +92,7 @@ change (e.g. #21 added a runtime download but README Install did not need a chan
 |---|---|---|
 | #21, #17, #15 | clean | no fire |
 | e18f7c7 | n/a | fires: pyproject.toml without README.md (likely true catch, as before) |
-| #19 Olinda client | clean | fires: `olinda.py` changed, `SECURITY.md` untouched. SECURITY.md has no network section, so this is a review prompt rather than a missing sentence: defensible but noisy |
+| #19 Olinda client | clean | fires: `olinda.py` changed, `SECURITY.md` untouched. SECURITY.md now has a "Network behaviour" section (owner chose to add it over dropping the rule), so the prompt points at a real target |
 | #20 SGS reader | clean (false positive fixed) | no fire |
 | #2 dependabot | n/a | exempt by author (the former false positive) |
 
