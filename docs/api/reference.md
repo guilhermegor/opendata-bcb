@@ -82,6 +82,12 @@ Devolve `data` (`date`) e `valor` (`Decimal`), mais as colunas de proveniência.
 maiores que 10 anos são divididos em janelas e concatenados. O valor é construído a partir do
 texto da fonte, nunca de `float`.
 
+---
+
+## Módulo: `currency_codes`
+
+Tabela de códigos de moeda da PTAX: código, símbolo, nome, país, tipo e data de exclusão.
+
 ### `read_currency_codes(*, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
 
 Lê a tabela de códigos de moeda da PTAX, publicada no arquivo diário
@@ -106,7 +112,7 @@ de proveniência e o arquivo é guardado em cache por dia de referência.
 
 ---
 
-## Boletins de cotação
+## Módulo: `quote_bulletins`
 
 Códigos de moeda aceitos pelo formulário de boletins de cotação do Banco Central.
 
