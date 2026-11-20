@@ -20,8 +20,6 @@
 
 Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, Focus, boletins de cotações, cadastro de bancos), com cache e proveniência.
 
-Este pacote não é oficial nem afiliado ao Banco Central do Brasil; ele apenas consome dados que o BCB publica abertamente. Foto do logo: sede do BCB em Brasília, por [Matheus Natan](https://www.pexels.com/@matheusnatan/) no Pexels.
-
 <!-- optional section: delete it when the project has no feature list -->
 <!-- slug: features -->
 ## Funcionalidades
@@ -152,5 +150,5 @@ Este projeto é licenciado sob MIT; veja [LICENSE](LICENSE).
 
 ---
 
-<sub>Gerado a partir do template lib-minimal via [BlueprintX](https://github.com/guilhermegor/blueprintx).</sub>
+<sub>Gerado a partir do template lib-minimal via [BlueprintX](https://github.com/guilhermegor/blueprintx). Pacote não oficial, sem afiliação com o Banco Central do Brasil; apenas consome dados que o BCB publica abertamente. Foto do logo: sede do BCB em Brasília, por [Matheus Natan](https://www.pexels.com/@matheusnatan/) no Pexels.</sub>
 <!-- add any project disclaimer inside the sub tag above; for a library wrapping a third party, e.g. "Unofficial, community library. Not affiliated with or endorsed by ORG_NAME." -->
