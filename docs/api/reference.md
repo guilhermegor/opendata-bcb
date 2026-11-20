@@ -45,7 +45,7 @@ Siga a convenção de uma classe por arquivo: funções utilitárias sem estado 
 
 ---
 
-## Módulo: `ingestion.banks`
+## Módulo: `banks`
 
 Cadastro de bancos do Banco Central: códigos COMPE e ISPB.
 
@@ -72,7 +72,7 @@ de referência: duas leituras no mesmo dia baixam uma vez.
 
 ---
 
-## Módulo: `ingestion.sgs`
+## Módulo: `sgs`
 
 Leitura de séries temporais do SGS (Sistema Gerenciador de Séries Temporais) do Banco Central.
 
@@ -81,6 +81,12 @@ Leitura de séries temporais do SGS (Sistema Gerenciador de Séries Temporais) d
 Devolve `data` (`date`) e `valor` (`Decimal`), mais as colunas de proveniência. Intervalos
 maiores que 10 anos são divididos em janelas e concatenados. O valor é construído a partir do
 texto da fonte, nunca de `float`.
+
+---
+
+## Módulo: `currency_codes`
+
+Tabela de códigos de moeda da PTAX: código, símbolo, nome, país, tipo e data de exclusão.
 
 ### `read_currency_codes(*, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
 
@@ -106,7 +112,7 @@ de proveniência e o arquivo é guardado em cache por dia de referência.
 
 ---
 
-## Boletins de cotação
+## Módulo: `quote_bulletins`
 
 Códigos de moeda aceitos pelo formulário de boletins de cotação do Banco Central.
 

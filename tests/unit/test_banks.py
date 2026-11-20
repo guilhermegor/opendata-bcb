@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from opendata_bcb._internal.utils.tabular_reader import ContractError
-from opendata_bcb.ingestion.banks import URL_BANKS, read_banks
+from opendata_bcb.banks import _URL_BANKS, read_banks
 
 
 PATH_FIXTURE = Path(__file__).parent.parent / "fixtures" / "banks" / "participantes_str.csv"
@@ -103,7 +103,7 @@ def test_read_banks_names_keep_accents(df_banks: pd.DataFrame) -> None:
 
 def test_read_banks_stamps_provenance_url(df_banks: pd.DataFrame) -> None:
     """Every row carries the source URL."""
-    assert df_banks["url"].unique().tolist() == [URL_BANKS]
+    assert df_banks["url"].unique().tolist() == [_URL_BANKS]
 
 
 def test_read_banks_stamps_provenance_columns(df_banks: pd.DataFrame) -> None:

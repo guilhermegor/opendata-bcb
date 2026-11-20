@@ -27,7 +27,7 @@ from opendata_bcb._internal.utils.tabular_reader import read_table
 from opendata_bcb._internal.utils.typing import type_checker
 
 
-URL_BANKS = "https://www.bcb.gov.br/content/estabilidadefinanceira/str1/ParticipantesSTR.csv"
+_URL_BANKS = "https://www.bcb.gov.br/content/estabilidadefinanceira/str1/ParticipantesSTR.csv"
 
 
 @type_checker
@@ -63,7 +63,7 @@ def read_banks(
     dt_day = dt_reference or date.today()
     path_dir = path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache"
     path_csv = download_daily(
-        URL_BANKS,
+        _URL_BANKS,
         path_cache_dir=path_dir,
         str_key="bcb-banks",
         dt_reference=dt_day,
@@ -81,7 +81,7 @@ def read_banks(
     df_banks = normalise_banks(df_raw)
     return stamp_provenance(
         df_banks,
-        str_url=URL_BANKS,
+        str_url=_URL_BANKS,
         cls_contract=CONTRACT_BANKS,
         str_content_hash=hash_artifact(path_csv),
         str_package_version=resolve_package_version("opendata-bcb"),
