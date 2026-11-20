@@ -1,6 +1,10 @@
 site_name: opendata-bcb
 site_description: "Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, Focus, boletins de cotações, cadastro de bancos), com cache e proveniência."
 repo_url: https://github.com/guilhermegor/opendata-bcb
+copyright: >-
+  Pacote não oficial, sem afiliação com o Banco Central do Brasil; apenas consome dados que o
+  BCB publica abertamente. Foto do logo: sede do BCB em Brasília, por
+  <a href="https://www.pexels.com/@matheusnatan/">Matheus Natan</a> no Pexels.
 nav:
   - Início: index.md
   - Guia:
