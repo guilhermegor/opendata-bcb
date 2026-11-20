@@ -20,6 +20,6 @@ __all__ = [
     "main",
     "read_banks",
     "read_currency_codes",
-    "read_sgs_series",
     "read_quote_bulletin_codes",
+    "read_sgs_series",
 ]
