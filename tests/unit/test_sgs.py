@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from opendata_bcb.ingestion import sgs
+from opendata_bcb import sgs
 
 
 PATH_FIXTURES = Path(__file__).parent.parent / "fixtures" / "sgs"

@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from opendata_bcb._internal.utils.tabular_reader import ContractError
-from opendata_bcb.ingestion.currency_codes import URL_CURRENCY_CODES, read_currency_codes
+from opendata_bcb.currency_codes import _URL_CURRENCY_CODES, read_currency_codes
 
 
 PATH_FIXTURE = Path(__file__).parent.parent / "fixtures" / "currency_codes" / "moedas_ptax.csv"
@@ -161,7 +161,7 @@ def test_read_currency_codes_blank_fields_become_na(df_codes: pd.DataFrame) -> N
 
 def test_read_currency_codes_stamps_provenance_url(df_codes: pd.DataFrame) -> None:
     """Every row carries the dated source URL."""
-    assert df_codes["url"].unique().tolist() == [URL_CURRENCY_CODES.format(dt=DT_DAY)]
+    assert df_codes["url"].unique().tolist() == [_URL_CURRENCY_CODES.format(dt=DT_DAY)]
 
 
 def test_read_currency_codes_stamps_provenance_columns(df_codes: pd.DataFrame) -> None:

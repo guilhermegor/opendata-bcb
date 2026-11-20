@@ -1,6 +1,6 @@
 """Frame builders for the SGS reader: the pandas seam, so the public layer holds none.
 
-The public ``ingestion.sgs`` module may only name pandas in annotations; every call that
+The public ``sgs`` module may only name pandas in annotations; every call that
 builds or types a frame lives here.
 """
 

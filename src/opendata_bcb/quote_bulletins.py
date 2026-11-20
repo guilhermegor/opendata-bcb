@@ -2,7 +2,7 @@
 
 The Central Bank's quote-bulletin form (``consultaBoletim.do``) lists the currencies it can
 report in a ``<select>``; its option values are the codes the bulletin query takes. The
-bulletins themselves (per currency) build on :data:`URL_QUOTE_BULLETIN_FORM` and the codes
+bulletins themselves (per currency) build on :data:`_URL_QUOTE_BULLETIN_FORM` and the codes
 read here.
 """
 
@@ -29,11 +29,11 @@ from opendata_bcb._internal.utils.quote_bulletins_frame import (
 from opendata_bcb._internal.utils.typing import type_checker
 
 
-URL_QUOTE_BULLETIN_FORM = (
+_URL_QUOTE_BULLETIN_FORM = (
     "https://ptax.bcb.gov.br/ptax_internet/consultaBoletim.do"
     "?method=exibeFormularioConsultaBoletim"
 )
-ENCODING_QUOTE_BULLETIN_FORM = "iso-8859-1"
+_ENCODING_QUOTE_BULLETIN_FORM = "iso-8859-1"
 
 
 @type_checker
@@ -71,7 +71,7 @@ def read_quote_bulletin_codes(
     dt_day = dt_reference or date.today()
     path_dir = path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache"
     path_html = download_daily(
-        URL_QUOTE_BULLETIN_FORM,
+        _URL_QUOTE_BULLETIN_FORM,
         path_cache_dir=path_dir,
         str_key="bcb-quote-bulletin-form",
         dt_reference=dt_day,
@@ -79,11 +79,11 @@ def read_quote_bulletin_codes(
         bool_use_cache=bool_use_cache,
         fn_download=fn_download,
     )
-    str_html = path_html.read_text(encoding=ENCODING_QUOTE_BULLETIN_FORM)
+    str_html = path_html.read_text(encoding=_ENCODING_QUOTE_BULLETIN_FORM)
     df_codes = build_currency_frame(parse_currency_options(str_html))
     return stamp_provenance(
         df_codes,
-        str_url=URL_QUOTE_BULLETIN_FORM,
+        str_url=_URL_QUOTE_BULLETIN_FORM,
         cls_contract=CONTRACT_QUOTE_BULLETIN_CODES,
         str_content_hash=hash_artifact(path_html),
         str_package_version=resolve_package_version("opendata-bcb"),

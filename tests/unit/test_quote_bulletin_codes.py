@@ -10,8 +10,8 @@ import pandas as pd
 import pytest
 
 from opendata_bcb._internal.utils.tabular_reader import ContractError
-from opendata_bcb.ingestion.quote_bulletins import (
-    URL_QUOTE_BULLETIN_FORM,
+from opendata_bcb.quote_bulletins import (
+    _URL_QUOTE_BULLETIN_FORM,
     read_quote_bulletin_codes,
 )
 
@@ -126,7 +126,7 @@ def test_read_codes_pins_content_hash_of_real_artifact(df_codes: pd.DataFrame) -
 
 def test_read_codes_stamps_provenance_url(df_codes: pd.DataFrame) -> None:
     """Every row carries the source URL."""
-    assert df_codes["url"].unique().tolist() == [URL_QUOTE_BULLETIN_FORM]
+    assert df_codes["url"].unique().tolist() == [_URL_QUOTE_BULLETIN_FORM]
 
 
 def test_read_codes_stamps_provenance_columns(df_codes: pd.DataFrame) -> None:

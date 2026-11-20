@@ -45,7 +45,7 @@ Siga a convenção de uma classe por arquivo: funções utilitárias sem estado 
 
 ---
 
-## Módulo: `ingestion.banks`
+## Módulo: `banks`
 
 Cadastro de bancos do Banco Central: códigos COMPE e ISPB.
 
@@ -72,7 +72,7 @@ de referência: duas leituras no mesmo dia baixam uma vez.
 
 ---
 
-## Módulo: `ingestion.sgs`
+## Módulo: `sgs`
 
 Leitura de séries temporais do SGS (Sistema Gerenciador de Séries Temporais) do Banco Central.
 

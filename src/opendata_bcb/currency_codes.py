@@ -27,8 +27,8 @@ from opendata_bcb._internal.utils.tabular_reader import read_table
 from opendata_bcb._internal.utils.typing import type_checker
 
 
-URL_CURRENCY_CODES = "https://www4.bcb.gov.br/Download/fechamento/M{dt:%Y%m%d}.csv"
-INT_MAX_FALLBACK_DAYS = 5
+_URL_CURRENCY_CODES = "https://www4.bcb.gov.br/Download/fechamento/M{dt:%Y%m%d}.csv"
+_INT_MAX_FALLBACK_DAYS = 5
 
 
 @type_checker
@@ -59,7 +59,7 @@ def _try_download(
         On any other download failure (5xx, timeout, write error), which must not be mistaken
         for a missing day and silently fall back to an older file.
     """
-    str_url = URL_CURRENCY_CODES.format(dt=dt_day)
+    str_url = _URL_CURRENCY_CODES.format(dt=dt_day)
     try:
         path_csv = download_daily(
             str_url,
@@ -87,10 +87,10 @@ def _candidate_days(dt_day: date) -> list[date]:
     Returns
     -------
     list of datetime.date
-        ``dt_day`` followed by ``INT_MAX_FALLBACK_DAYS`` earlier business days.
+        ``dt_day`` followed by ``_INT_MAX_FALLBACK_DAYS`` earlier business days.
     """
     list_days = [dt_day]
-    for _ in range(INT_MAX_FALLBACK_DAYS):
+    for _ in range(_INT_MAX_FALLBACK_DAYS):
         list_days.append(add_working_days(list_days[-1], int_days=-1))
     return list_days
 
@@ -156,7 +156,7 @@ def read_currency_codes(
     ----------
     dt_reference : datetime.date, optional
         The file day, defaulting to today. When the source has no file for it, the previous
-        business day is tried, up to ``INT_MAX_FALLBACK_DAYS`` times.
+        business day is tried, up to ``_INT_MAX_FALLBACK_DAYS`` times.
     path_cache_dir : pathlib.Path, optional
         Directory for the daily cache; defaults to a folder under the system temp directory.
     bool_use_cache : bool, optional

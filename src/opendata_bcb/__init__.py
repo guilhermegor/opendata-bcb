@@ -2,11 +2,11 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
-from .ingestion.banks import read_banks
-from .ingestion.currency_codes import read_currency_codes
-from .ingestion.quote_bulletins import read_quote_bulletin_codes
-from .ingestion.sgs import read_sgs_series
+from .banks import read_banks
+from .currency_codes import read_currency_codes
 from .main import main
+from .quote_bulletins import read_quote_bulletin_codes
+from .sgs import read_sgs_series
 
 
 try:
