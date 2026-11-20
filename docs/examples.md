@@ -29,3 +29,18 @@ apenas o quê.
 ```python
 # Replace with a second illustrative example.
 ```
+
+## Receita: série temporal do SGS
+
+Lê a cotação do dólar (série 1) em um intervalo. `valor` é `Decimal`, sem perda de precisão.
+
+```python
+from datetime import date
+from pathlib import Path
+
+from opendata_bcb import read_sgs_series
+
+df_dolar = read_sgs_series(
+    1, dt_start=date(2026, 11, 1), dt_end=date(2026, 11, 10), path_cache_dir=Path(".cache")
+)
+```

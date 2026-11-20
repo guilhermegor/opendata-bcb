@@ -2,6 +2,7 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
+from .ingestion.sgs import read_sgs_metadata, read_sgs_series
 from .main import main
 
 
@@ -14,4 +15,6 @@ except PackageNotFoundError:  # pragma: no cover - source tree without an instal
 __all__ = [
     "__version__",
     "main",
+    "read_sgs_metadata",
+    "read_sgs_series",
 ]

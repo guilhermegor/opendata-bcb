@@ -1,0 +1,123 @@
+"""Unit tests for the SGS reader, fed by fixtures through the download seam."""
+
+from datetime import date
+from decimal import Decimal
+from pathlib import Path
+
+import pandas as pd
+import pytest
+
+from opendata_bcb.ingestion import sgs
+
+
+PATH_FIXTURES = Path(__file__).parent.parent / "fixtures" / "sgs"
+
+
+class _FakeDownload:
+    """Download seam that copies a fixture and records the requested URLs."""
+
+    def __init__(self, path_fixture: Path) -> None:
+        """Remember which fixture to serve."""
+        self.path_fixture = path_fixture
+        self.list_urls: list[str] = []
+
+    def __call__(self, *, str_url: str, path_dest: Path) -> Path:
+        """Write the fixture bytes to the destination."""
+        self.list_urls.append(str_url)
+        path_dest.write_bytes(self.path_fixture.read_bytes())
+        return path_dest
+
+
+@pytest.fixture
+def cls_fake(tmp_path: Path) -> _FakeDownload:
+    """Serve the series-1 fixture; ``tmp_path`` is unused here but keeps isolation explicit."""
+    return _FakeDownload(PATH_FIXTURES / "serie_1_valores.json")
+
+
+@pytest.fixture
+def df_values(*, tmp_path: Path, cls_fake: _FakeDownload) -> pd.DataFrame:
+    """Read the series-1 fixture over a 10-day range."""
+    return sgs.read_sgs_series(
+        1,
+        dt_start=date(2026, 11, 1),
+        dt_end=date(2026, 11, 10),
+        path_cache_dir=tmp_path,
+        fn_download=cls_fake,
+    )
+
+
+def test_read_sgs_series_value_is_exact_decimal(df_values: pd.DataFrame) -> None:
+    """The first value keeps the source scale as a Decimal."""
+    assert df_values["valor"].iloc[0] == Decimal("5.4935")
+
+
+def test_read_sgs_series_date_is_parsed(df_values: pd.DataFrame) -> None:
+    """``dd/mm/yyyy`` becomes a date."""
+    assert df_values["data"].iloc[0] == date(2026, 11, 3)
+
+
+def test_read_sgs_series_row_count(df_values: pd.DataFrame) -> None:
+    """Every fixture row is returned."""
+    assert len(df_values) == 6
+
+
+def test_read_sgs_series_has_provenance(df_values: pd.DataFrame) -> None:
+    """Provenance columns are stamped."""
+    assert "content_hash" in df_values.columns
+
+
+def test_read_sgs_series_formats_source_url(
+    *, df_values: pd.DataFrame, cls_fake: _FakeDownload
+) -> None:
+    """The request carries code and dd/mm/yyyy bounds."""
+    assert cls_fake.list_urls == [
+        "https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados"
+        "?formato=json&dataInicial=01/11/2026&dataFinal=10/11/2026"
+    ]
+
+
+def test_read_sgs_series_splits_long_range(tmp_path: Path) -> None:
+    """A 25-year range needs three windows, hence three requests."""
+    cls_fake = _FakeDownload(PATH_FIXTURES / "serie_1_valores.json")
+    sgs.read_sgs_series(
+        1,
+        dt_start=date(2000, 1, 1),
+        dt_end=date(2025, 1, 1),
+        path_cache_dir=tmp_path,
+        fn_download=cls_fake,
+    )
+    assert len(cls_fake.list_urls) == 3
+
+
+def test_split_windows_rejects_inverted_range() -> None:
+    """Start after end is an error."""
+    with pytest.raises(ValueError, match="after"):
+        sgs._split_windows(date(2026, 1, 2), dt_end=date(2026, 1, 1))
+
+
+def test_split_windows_are_contiguous() -> None:
+    """The second window starts the day after the first ends."""
+    list_windows = sgs._split_windows(date(2000, 1, 1), dt_end=date(2025, 1, 1))
+    assert list_windows[1][0] - list_windows[0][1] == date(2000, 1, 2) - date(2000, 1, 1)
+
+
+def test_read_sgs_metadata_full_name(tmp_path: Path) -> None:
+    """The full name is extracted from the fixture page."""
+    df_out = sgs.read_sgs_metadata(
+        1,
+        dt_reference=date(2026, 11, 20),
+        path_cache_dir=tmp_path,
+        fn_download=_FakeDownload(PATH_FIXTURES / "serie_1_metadados.html"),
+    )
+    assert df_out["full_name"].iloc[0].startswith("Taxa de cambio - Livre")
+
+
+def test_parse_sgs_metadata_unit_and_start_date() -> None:
+    """Unit and start date come from the same row."""
+    str_html = (PATH_FIXTURES / "serie_1_metadados.html").read_text(encoding="utf-8")
+    assert sgs.parse_sgs_metadata(str_html)["unit"] == "u.m.c./US$"
+
+
+def test_parse_sgs_metadata_missing_fields_are_empty() -> None:
+    """A page with no table yields empty strings."""
+    assert sgs.parse_sgs_metadata("<html></html>")["periodicity"] == ""
