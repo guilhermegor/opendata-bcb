@@ -1,34 +1,31 @@
-"""Data contracts for the project's input files (config layer).
+"""Data contracts for the project's input sources (config layer).
 
-A contract is **declarative configuration** of an input's expected shape — which columns a
-source must carry, which must hold valid CNPJs — *not* data access, so contracts live in
-``config`` beside the other declarative config (``inputs.yaml``, ``connection_db``), imported
-by the model loaders and the controller boundary.
-
-Convention: **one file per source** under this package (``cadastro.py``, ``orders.py``, …),
-each defining a single ``FileContract`` instance; this aggregator re-exports them (plus the
+A contract is **declarative configuration** of a source's expected shape — which columns it
+must carry — *not* data access. Convention: **one file per source** under this package, each
+defining a single ``FileContract`` instance; this aggregator re-exports them (plus the
 machinery from ``utils.tabular_reader``) so callers import from one place:
-``from config.contracts import EXAMPLE_SOURCE, find_file_problems``.
-
-``EXAMPLE_SOURCE`` is a reference instance — copy ``example_source.py`` per real source and
-delete the example once your own contracts exist.
+``from opendata_bcb._internal.config.contracts import PTAX_USD_BRL, find_contract_problems``.
 """
 
 from __future__ import annotations
 
 from opendata_bcb._internal.config.contracts.banks import CONTRACT_BANKS
-from opendata_bcb._internal.config.contracts.example_source import EXAMPLE_SOURCE
+from opendata_bcb._internal.config.contracts.currency_codes import CONTRACT_CURRENCY_CODES
+from opendata_bcb._internal.config.contracts.ptax_usd_brl import PTAX_USD_BRL
 from opendata_bcb._internal.utils.tabular_reader import (
     ContractError,
     FileContract,  # noqa: TID251 -- contracts are constructed here
+    find_contract_problems,
     find_file_problems,
 )
 
 
 __all__ = [
     "CONTRACT_BANKS",
+    "CONTRACT_CURRENCY_CODES",
     "ContractError",
-    "EXAMPLE_SOURCE",
     "FileContract",
+    "find_contract_problems",
     "find_file_problems",
+    "PTAX_USD_BRL",
 ]
