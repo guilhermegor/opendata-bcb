@@ -44,7 +44,7 @@ class _FakeDownload:
     def __call__(self, *, str_url: str, path_dest: Path) -> Path:
         """Write the next body to ``path_dest``."""
         self.list_urls.append(str_url)
-        path_dest.write_text(self.list_bodies.pop(0), encoding="utf-8")
+        path_dest.write_bytes(self.list_bodies.pop(0).encode("utf-8"))
         return path_dest
 
 
