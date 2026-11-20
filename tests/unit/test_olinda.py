@@ -5,15 +5,23 @@ replaced by a stand-in that serves fixture bytes and records the URLs, so nothin
 network.
 """
 
+import contextlib
 from datetime import date
 from decimal import Decimal
+import hashlib
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
 from opendata_bcb._internal.config.contracts import PTAX_USD_BRL, ContractError, FileContract
-from opendata_bcb._internal.olinda import OlindaError, build_url, fetch_frame, parse_payload
+from opendata_bcb._internal.olinda import (
+    OlindaError,
+    build_url,
+    fetch_frame,
+    parse_page,
+    parse_payload,
+)
 
 
 _FIXTURES = Path(__file__).parent.parent / "fixtures" / "olinda"
@@ -93,8 +101,8 @@ def test_parse_payload_keeps_exact_decimals() -> None:
 
 def test_parse_payload_rejects_real_error_body() -> None:
     """The real 400 body (comment-wrapped codigo/mensagem) raises, never returns empty."""
-    with pytest.raises(OlindaError, match="Cannot find EntitySet"):
-        parse_payload(_fixture_text("error_unknown_resource.json"))
+    with pytest.raises(OlindaError, match="Olinda returned an error"):
+        parse_payload(_fixture_text("error_unknown_resource.txt"))
 
 
 def test_parse_payload_rejects_odata_error_envelope() -> None:
@@ -170,3 +178,85 @@ def test_fetch_frame_empty_result_violates_contract(tmp_path: Path) -> None:
     cls_fake = _FakeDownload(['{"value": []}'])
     with pytest.raises(ContractError):
         _fetch(cls_fake, path_cache=tmp_path)
+
+
+def test_build_url_doubles_apostrophes_in_string_params() -> None:
+    """An embedded apostrophe cannot terminate the OData literal."""
+    assert "%27O%27%27Neil%27" in build_url("S", "R", dict_params={"name": "O'Neil"})
+
+
+@pytest.mark.parametrize("str_body", ['{"value": [null]}', '{"value": [{"a": 1}, 3]}'])
+def test_parse_payload_rejects_non_object_rows(str_body: str) -> None:
+    """Every element is checked, not a sample."""
+    with pytest.raises(OlindaError, match="array of objects"):
+        parse_payload(str_body)
+
+
+def test_parse_payload_empty_value_is_valid() -> None:
+    """An empty page is legitimate for the pager."""
+    assert parse_payload('{"value": []}') == []
+
+
+def test_parse_page_returns_next_link() -> None:
+    """The opaque next link is surfaced when present."""
+    str_link = "https://olinda.bcb.gov.br/olinda/servico/X/versao/v1/odata/R?$skip=2"
+    assert parse_page('{"value": [], "@odata.nextLink": "' + str_link + '"}')[1] == str_link
+
+
+def test_parse_page_rejects_foreign_next_link() -> None:
+    """A link off the Olinda host is refused."""
+    with pytest.raises(OlindaError, match="next link"):
+        parse_page('{"value": [], "@odata.nextLink": "http://evil.example/x"}')
+
+
+def test_fetch_frame_follows_next_link_on_short_page(tmp_path: Path) -> None:
+    """A link on a short page is followed; the last page has none."""
+    str_link = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/R?$skiptoken=1"
+    str_row = '{"cotacaoCompra": 1.5, "cotacaoVenda": 1.6, "dataHoraCotacao": "x"}'
+    cls_fake = _FakeDownload(
+        [
+            '{"value": [' + str_row + '], "@odata.nextLink": "' + str_link + '"}',
+            '{"value": [' + str_row + "]}",
+        ]
+    )
+    df_linked = _fetch(cls_fake, path_cache=tmp_path, int_page_size=5)
+    assert (len(df_linked), cls_fake.list_urls[1]) == (2, str_link)
+
+
+@pytest.mark.parametrize("int_size", [0, -1])
+def test_fetch_frame_rejects_non_positive_page_size(  # noqa: PLR0917 -- pytest fixture + param
+    tmp_path: Path, int_size: int
+) -> None:
+    """No request is made with a page size that cannot advance."""
+    cls_fake = _FakeDownload([])
+    with pytest.raises(OlindaError, match="must be positive"):
+        _fetch(cls_fake, path_cache=tmp_path, int_page_size=int_size)
+
+
+def test_fetch_frame_malformed_page_raises(tmp_path: Path) -> None:
+    """A malformed page is a loud failure."""
+    with pytest.raises(OlindaError, match="not JSON"):
+        _fetch(_FakeDownload(["not json"]), path_cache=tmp_path)
+
+
+def test_fetch_frame_malformed_page_is_not_cached(tmp_path: Path) -> None:
+    """A rejected page is not published, so the retry downloads it again."""
+    cls_fake = _FakeDownload(["not json", _fixture_text("ptax_usd_brl.json")])
+    with contextlib.suppress(OlindaError):
+        _fetch(cls_fake, path_cache=tmp_path)
+    _fetch(cls_fake, path_cache=tmp_path)
+    assert len(cls_fake.list_urls) == 2
+
+
+def test_fetch_frame_hash_covers_the_parsed_bytes(tmp_path: Path) -> None:
+    """The content hash is the sha256 of the page bytes that were parsed."""
+    str_body = _fixture_text("ptax_usd_brl.json")
+    df_hashed = _fetch(_FakeDownload([str_body]), path_cache=tmp_path)
+    assert df_hashed["content_hash"].iloc[0] == hashlib.sha256(str_body.encode()).hexdigest()
+
+
+def test_fetch_frame_rejects_source_field_named_like_provenance(tmp_path: Path) -> None:
+    """A source ``url`` field is refused rather than overwritten."""
+    str_row = '{"cotacaoCompra": 1, "cotacaoVenda": 1, "dataHoraCotacao": "x", "url": "u"}'
+    with pytest.raises(OlindaError, match="collide"):
+        _fetch(_FakeDownload(['{"value": [' + str_row + "]}"]), path_cache=tmp_path)
