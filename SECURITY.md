@@ -63,6 +63,22 @@ declared dependency set (a vulnerable transitive dependency this project pulls i
 Out of scope: vulnerabilities in third-party services this project merely talks to — report
 those to the service's own security team.
 
+## Network behaviour
+
+This library makes outbound HTTP(S) requests, and only to public Banco Central do Brasil hosts
+(`*.bcb.gov.br`). It never listens on a port and never sends credentials, cookies or user data.
+Every download goes through one seam, `_internal/utils/http_downloader.py`, which:
+
+- accepts only `http`/`https` URLs;
+- resolves the host first and refuses any private, loopback, link-local, reserved or multicast
+  address (an SSRF guard);
+- does not follow redirects, since a redirect could hop to an internal host after the check;
+- applies a socket timeout and a bounded retry;
+- reports a 404 as `FileNotFoundError` and any other failure as `OSError`, never as empty data.
+
+The Olinda OData client (`_internal/olinda.py`) also refuses a pagination link that points off the
+Olinda host. A report that any of these guards can be bypassed is in scope.
+
 ## Automated security hygiene
 
 This repository enables, via `poe enable_security`:

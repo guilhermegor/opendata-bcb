@@ -1,0 +1,9 @@
+rules:
+  - src: ["pyproject.toml"]
+    docs: ["README.md"]
+  - src: ["src/opendata_bcb/__init__.py"]
+    docs: ["docs/api/reference.md"]
+  - src: [".github/workflows/release*"]
+    docs: ["docs/releasing-1-0-0.md"]
+  - src: ["src/opendata_bcb/_internal/utils/http_downloader.py", "src/opendata_bcb/_internal/olinda.py"]
+    docs: ["SECURITY.md"]

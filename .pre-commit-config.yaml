@@ -331,6 +331,13 @@ repos:
         pass_filenames: false
         always_run: true
 
+      - id: check-docs-drift
+        name: docs drift (poe tasks and __all__ names must exist in the docs)
+        entry: bash bin/poetry_exec.sh run python bin/check_docs_drift.py
+        language: system
+        files: ^(docs/|README\.md|CONTRIBUTING\.md|SECURITY\.md|poe_tasks.*\.toml|src/opendata_bcb/__init__\.py)
+        pass_filenames: false
+
       - id: check-comment-language
         name: documentation-language boundary (code is English)
         entry: bash bin/poetry_exec.sh run python bin/check_comment_language.py
