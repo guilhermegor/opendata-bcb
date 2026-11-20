@@ -114,3 +114,62 @@ def test_coupling_escape_without_reason_still_reported() -> None:
         ["pyproject.toml"], list_rules=LIST_RULES, str_messages="Docs: not needed because "
     )
     assert len(list_found) == 1
+
+
+def test_documented_name_in_table_row_passes(tmp_path: pathlib.Path) -> None:
+    """A name that only appears in a table row (the #20 shape) counts as documented."""
+    make_repo(tmp_path, str_reference="| `read_banks(x)` | frame |\n")
+    assert cls_drift.find_undocumented_names(tmp_path) == []
+
+
+def test_name_as_substring_is_still_undocumented(tmp_path: pathlib.Path) -> None:
+    """Word-bounded: ``read_banks_extra`` does not document ``read_banks``."""
+    make_repo(tmp_path, str_reference="see read_banks_extra\n")
+    assert len(cls_drift.find_undocumented_names(tmp_path)) == 1
+
+
+def test_poe_in_prose_is_ignored(tmp_path: pathlib.Path) -> None:
+    """Prose such as "o poe vive dentro do venv" is not a command."""
+    make_repo(tmp_path, str_readme="o poe vive dentro do venv")
+    assert cls_drift.find_missing_poe_tasks(tmp_path) == []
+
+
+def test_poe_in_code_block_comment_is_ignored(tmp_path: pathlib.Path) -> None:
+    """A ``#`` comment inside a fenced block is prose, not a command."""
+    make_repo(tmp_path, str_readme="```bash\nbash bin/venv.sh   # o poe vive aqui\n```\n")
+    assert cls_drift.find_missing_poe_tasks(tmp_path) == []
+
+
+def test_unknown_poe_in_code_block_is_reported(tmp_path: pathlib.Path) -> None:
+    """A real command line inside a fenced block is still checked."""
+    make_repo(tmp_path, str_readme="```bash\npoetry run poe nope\n```\n")
+    assert len(cls_drift.find_missing_poe_tasks(tmp_path)) == 1
+
+
+def test_parent_relative_link_is_not_checked(tmp_path: pathlib.Path) -> None:
+    """A ``../`` link (the GitHub issues trick) is skipped."""
+    make_repo(tmp_path, str_readme="[issues](../../issues)")
+    assert cls_drift.find_missing_paths(tmp_path) == []
+
+
+def test_venv_path_is_not_checked(tmp_path: pathlib.Path) -> None:
+    """``.venv/`` paths are generated, never drift."""
+    make_repo(tmp_path, str_readme="see `.venv/Scripts/poe.exe`")
+    assert cls_drift.find_missing_paths(tmp_path) == []
+
+
+@pytest.mark.parametrize("str_author", ["dependabot[bot]", "github-actions[bot]"])
+def test_coupling_bot_author_is_exempt(str_author: str) -> None:
+    """A bot PR cannot write the escape line, so it is exempt."""
+    list_found = cls_drift.find_coupling_gaps(
+        ["pyproject.toml"], list_rules=LIST_RULES, str_messages="", str_author=str_author
+    )
+    assert list_found == []
+
+
+def test_coupling_human_author_is_not_exempt() -> None:
+    """Only the listed bots are exempt."""
+    list_found = cls_drift.find_coupling_gaps(
+        ["pyproject.toml"], list_rules=LIST_RULES, str_messages="", str_author="octocat"
+    )
+    assert len(list_found) == 1

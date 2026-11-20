@@ -232,6 +232,21 @@ jobs:
         if: runner.os == 'Linux'
         run: poetry run python bin/check_backlog_ledger.py
 
+      - name: Run Docs-Drift Enforcement
+        if: runner.os == 'Linux'
+        run: poetry run python bin/check_docs_drift.py
+
+      - name: Run Docs-Drift Advisory (never fails)
+        if: runner.os == 'Linux'
+        run: poetry run python bin/check_docs_drift.py --advisory
+
+      - name: Run Docs-Coupling Advisory (never fails)
+        if: runner.os == 'Linux' && github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: poetry run python bin/check_docs_drift.py --diff "origin/${BASE_REF}" --author "${PR_AUTHOR}"
+
       - name: Run Ruff Linting
         if: runner.os == 'Linux'
         run: |

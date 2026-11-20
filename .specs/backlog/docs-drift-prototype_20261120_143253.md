@@ -6,11 +6,12 @@
       citations vs `poe_tasks*.toml`, cited repo paths/links) and part 2 (`--diff <base> [--head <ref>]`
       against `.docs-coupling.yaml`). Advisory: not wired into pre-commit or CI.
 - [x] `.docs-coupling.yaml` (5 starter rules), `tests/unit/test_check_docs_drift.py` (should-fail witnesses).
-- [x] Measurements below.
+- [x] Measurements below (taken on the prototype as first built, kept as the record).
+- [x] Owner decisions applied (see Decisions): two checks blocking in pre-commit and CI, two advisory in
+      CI, the true drift fixed (CONTRIBUTING.md offline clause dropped), new should-fail witnesses.
 
 ## Open
 
-- [ ] Owner decides what becomes a blocking gate (see Recommendation); the issue stays open.
 - [ ] Carry the result to a BlueprintX issue.
 
 ## Method notes
@@ -22,7 +23,8 @@
   fenced blocks. Coupling rules are any-of: touching one listed doc satisfies the rule.
 - The repo has only 3 merged PRs (#15, #17, #21) plus 2 bootstrap commits, not ~15; replayed all of them,
   plus open #19 and #20 and (by file list) open dependabot #2.
-- `SECURITY.md` does not exist, so the network-code rule can only be satisfied via `docs/api/reference.md`.
+- Correction: `SECURITY.md` exists (the first draft of this ledger said it did not; a filtered `ls` listed
+  nothing). It is a vulnerability-reporting policy with no mention of outbound requests.
 
 ## Part 1: symbol drift on origin/main (10 findings)
 
@@ -63,18 +65,42 @@ table cell" fixes it at the price of a weaker oracle.
 Misses: none seen on the 3 merged PRs; coupling has no way to see a README gap when `pyproject.toml` did not
 change (e.g. #21 added a runtime download but README Install did not need a change).
 
-## Recommendation (owner decides; trade-offs only)
+## Decisions (owner, applied in this branch)
 
-- **Candidates to block:** the `poe <task>` existence check (2 true catches, 1 prose false positive removable by
-  skipping fenced-block comments) and the `__all__`-in-reference.md check once "documented" is widened to
-  table cells. Trade-off: block now and fix the one #20-shaped false positive first, or keep advisory until
-  the reference.md layout is stable (it is still a template-era file).
-- **Keep advisory:** the path-existence check (7/7 false positives until git-ignored and generated paths are
-  excluded) and the whole coupling map (n=7 replays, one likely catch, one bot false positive; too small to
-  justify a hard block).
-- **Coupling map should start with:** `pyproject.toml` -> README install, `__init__.py` -> reference.md,
-  `.github/workflows/release*` -> releasing doc. Drop the `poe_tasks*.toml` rule unless the poe-existence
-  check covers it. `SECURITY.md` rule is dead until the file exists.
-- **Escape:** the commit-message `Docs: not needed because <reason>` works offline and is auditable in
-  history; the `docs:none` label is easier for bots and reviewers but needs a REST call in CI and leaves no
-  trace in the commit. Bot authors (dependabot) need an exemption either way, as the ledger gate does.
+- **Blocking** (default mode of `bin/check_docs_drift.py`; pre-commit hook `check-docs-drift` and the
+  `Run Docs-Drift Enforcement` step in `tests.yml`):
+  1. `poe <task>` existence. Only commands in fenced blocks and inline code spans are read, shell `#`
+     comments are dropped, prose is never read. Removes the `poe vive` false positive.
+  2. `__all__` documented. A name counts when it appears anywhere in `docs/api/reference.md` as a whole
+     word (heading, `:::`, table row, prose). Re-checked on `origin/feat/4-sgs-reader`: the #20 false
+     positive is gone (only the CONTRIBUTING.md findings below remain there, same as on main).
+- **Advisory** (CI only, always exit 0, findings printed):
+  3. Cited paths exist (`--advisory`): git-ignored paths, `.venv/` and `../` links are skipped. On the
+     branch it still reports `docs/63-update-api-reference` (an example branch name) and
+     `CODCOMPE/Tabela.pdf` (the legacy source name): 2 false positives, down from 7.
+  4. Coupling map (`--diff origin/<base> --author <login>`, PR events only). Trimmed to
+     pyproject.toml -> README.md, `__init__.py` -> reference.md, `.github/workflows/release*` ->
+     docs/releasing-1-0-0.md, `http_downloader.py` and `olinda.py` -> SECURITY.md. Escape: a
+     `Docs: not needed because <reason>` line in any commit of the range; `dependabot[bot]` and
+     `github-actions[bot]` authors are exempt.
+- **True drift fixed:** CONTRIBUTING.md no longer cites `poe new_branch` / `poe git_merge_to_main`, which
+  exist only in BlueprintX's offline mode; this project is online. Blocking check is green on the branch.
+
+## Re-replay with the final design
+
+| Case | Blocking checks | Coupling (final map) |
+|---|---|---|
+| #21, #17, #15 | clean | no fire |
+| e18f7c7 | n/a | fires: pyproject.toml without README.md (likely true catch, as before) |
+| #19 Olinda client | clean | fires: `olinda.py` changed, `SECURITY.md` untouched. SECURITY.md has no network section, so this is a review prompt rather than a missing sentence: defensible but noisy |
+| #20 SGS reader | clean (false positive fixed) | no fire |
+| #2 dependabot | n/a | exempt by author (the former false positive) |
+
+## Remaining trade-offs
+
+- The coupling map is still n=7 replays; one likely catch, one debatable hit. It stays advisory until a few
+  more PRs have been measured.
+- `docs/api/reference.md` accepting any whole-word mention is a weaker oracle than a heading or directive: a
+  passing mention in prose satisfies it. Chosen by the owner over the heading-only form that failed on #20.
+- Escape via commit line is auditable but invisible to a reviewer reading only the PR page; a `docs:none`
+  label (REST read in CI) remains an option.
