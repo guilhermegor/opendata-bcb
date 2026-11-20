@@ -173,3 +173,59 @@ def test_coupling_human_author_is_not_exempt() -> None:
         ["pyproject.toml"], list_rules=LIST_RULES, str_messages="", str_author="octocat"
     )
     assert len(list_found) == 1
+
+
+@pytest.mark.parametrize(
+    "str_readme",
+    [
+        "~~~bash\npoe nope\n~~~\n",
+        "````md\n```\npoe nope\n````\n",
+        "```bash\n~~~\npoe nope\n```\n",
+    ],
+)
+def test_unknown_poe_in_any_valid_fence_is_reported(
+    tmp_path: pathlib.Path, *, str_readme: str
+) -> None:
+    """Tilde fences count, and a shorter or other-character fence line does not close a block."""
+    make_repo(tmp_path, str_readme=str_readme)
+    assert len(cls_drift.find_missing_poe_tasks(tmp_path)) == 1
+
+
+def test_annotated_all_is_read(tmp_path: pathlib.Path) -> None:
+    """``__all__: list[str] = [...]`` is read like a plain assignment (should-fail witness)."""
+    make_repo(tmp_path, str_reference="# Reference\n")
+    (tmp_path / "src/opendata_bcb/__init__.py").write_text(
+        '__all__: list[str] = ["read_banks"]\n', encoding="utf-8"
+    )
+    assert len(cls_drift.find_undocumented_names(tmp_path)) == 1
+
+
+def _run_main(path_root: pathlib.Path, *, monkeypatch: pytest.MonkeyPatch, str_readme: str) -> int:
+    """Run the gate's entry point in default (blocking) mode against ``path_root``."""
+    make_repo(path_root, str_readme=str_readme, str_reference="`read_banks`\n")
+    monkeypatch.setattr(cls_drift, "PATH_ROOT", path_root)
+    monkeypatch.setattr("sys.argv", ["check_docs_drift.py"])
+    return cls_drift.main()
+
+
+@pytest.mark.parametrize(
+    ("str_readme", "int_expected"),
+    [("run `poe nope`", 1), ("run `poe lint`", 0)],
+)
+def test_main_blocking_exit_status(
+    tmp_path: pathlib.Path,
+    *,
+    monkeypatch: pytest.MonkeyPatch,
+    str_readme: str,
+    int_expected: int,
+) -> None:
+    """The blocking mode exits 1 on drift and 0 on clean input."""
+    assert _run_main(tmp_path, monkeypatch=monkeypatch, str_readme=str_readme) == int_expected
+
+
+def test_main_blocking_names_offending_file(
+    tmp_path: pathlib.Path, *, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """The diagnostic names the doc file and the undefined task."""
+    _run_main(tmp_path, monkeypatch=monkeypatch, str_readme="run `poe nope`")
+    assert "poe: README.md cites `poe nope`" in capsys.readouterr().out

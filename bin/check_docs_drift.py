@@ -34,7 +34,9 @@ PATH_REFERENCE = pathlib.Path("docs/api/reference.md")
 PATH_COUPLING = pathlib.Path(".docs-coupling.yaml")
 LIST_DOC_GLOBS = ["README.md", "CONTRIBUTING.md", "SECURITY.md", "docs/**/*.md"]
 SET_EXEMPT_AUTHORS = {"dependabot[bot]", "github-actions[bot]"}
-RE_FENCE = re.compile(r"```.*?```", re.DOTALL)
+RE_FENCE = re.compile(
+    r"^ {0,3}((`|~)\2{2,})[^\n]*\n.*?^ {0,3}\1\2*[ \t]*$", re.DOTALL | re.MULTILINE
+)
 RE_SPAN = re.compile(r"`([^`\n]+)`")
 RE_LINK = re.compile(r"\]\(([^)\s]+)\)")
 RE_POE = re.compile(
@@ -61,11 +63,33 @@ def list_all_names(path_root: pathlib.Path) -> list:
     """
     cls_tree = ast.parse((path_root / PATH_INIT).read_text(encoding="utf-8"))
     for cls_node in cls_tree.body:
-        if isinstance(cls_node, ast.Assign) and cls_node.targets[0].id == "__all__":
-            return [
-                str_n for str_n in ast.literal_eval(cls_node.value) if not str_n.startswith("__")
-            ]
+        cls_value = assigned_all_value(cls_node)
+        if cls_value is not None:
+            return [str_n for str_n in ast.literal_eval(cls_value) if not str_n.startswith("__")]
     return []
+
+
+def assigned_all_value(cls_node: ast.stmt) -> ast.expr | None:
+    """Return the value a plain or annotated ``__all__`` assignment binds, else ``None``.
+
+    Parameters
+    ----------
+    cls_node : ast.stmt
+        A top-level statement of the package ``__init__``.
+
+    Returns
+    -------
+    ast.expr | None
+        The assigned expression, or ``None`` when the statement does not assign ``__all__``.
+    """
+    if isinstance(cls_node, ast.Assign):
+        list_targets = cls_node.targets
+    elif isinstance(cls_node, ast.AnnAssign):
+        list_targets = [cls_node.target]
+    else:
+        return None
+    bool_hit = any(getattr(cls_t, "id", None) == "__all__" for cls_t in list_targets)
+    return cls_node.value if bool_hit else None
 
 
 def find_undocumented_names(path_root: pathlib.Path) -> list:
@@ -102,7 +126,8 @@ def list_doc_files(path_root: pathlib.Path) -> list:
 
 def list_code_snippets(str_text: str) -> list:
     """Return fenced blocks and inline code spans of a markdown text, shell comments dropped."""
-    list_raw = RE_FENCE.findall(str_text) + RE_SPAN.findall(RE_FENCE.sub("", str_text))
+    list_fences = [cls_m.group(0) for cls_m in RE_FENCE.finditer(str_text)]
+    list_raw = list_fences + RE_SPAN.findall(RE_FENCE.sub("", str_text))
     return [RE_SHELL_COMMENT.sub("", str_s) for str_s in list_raw]
 
 
