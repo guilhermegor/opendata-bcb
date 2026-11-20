@@ -217,6 +217,7 @@ def _fetch_bytes(
                 raise OSError(f"Download returned status {int_status} for {str_url!r}")
             return cls_response.read()
     except error.HTTPError as cls_err:
+        cls_err.close()
         if cls_err.code == HTTPStatus.NOT_FOUND:
             raise FileNotFoundError(f"Not found (404): {str_url!r}") from cls_err
         raise OSError(f"Failed to download {str_url!r}: {cls_err}") from cls_err
