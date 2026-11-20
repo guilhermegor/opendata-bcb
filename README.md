@@ -1,7 +1,7 @@
 <!-- readme-archetype: library -->
 # opendata-bcb
 
-<p align="center"><img src="https://raw.githubusercontent.com/guilhermegor/opendata-bcb/main/assets/logo_lorem_ipsum.png" width="200" alt="opendata-bcb logo"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/guilhermegor/opendata-bcb/main/docs/assets/logo.png" width="200" alt="opendata-bcb logo"></p>
 
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 ![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)
@@ -19,6 +19,8 @@
 ## Visão geral
 
 Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, Focus, boletins de cotações, cadastro de bancos), com cache e proveniência.
+
+Este pacote não é oficial nem afiliado ao Banco Central do Brasil; ele apenas consome dados que o BCB publica abertamente. Foto do logo: sede do BCB em Brasília, por [Matheus Natan](https://www.pexels.com/@matheusnatan/) no Pexels.
 
 <!-- optional section: delete it when the project has no feature list -->
 <!-- slug: features -->

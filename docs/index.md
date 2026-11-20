@@ -2,6 +2,8 @@
 
 Uma biblioteca Python mínima, com empacotamento, testes, CI e lint já configurados.
 
+Este pacote não é oficial nem afiliado ao Banco Central do Brasil; ele apenas consome dados que o BCB publica abertamente. Foto do logo: sede do BCB em Brasília, por [Matheus Natan](https://www.pexels.com/@matheusnatan/) no Pexels.
+
 ---
 
 ## Conteúdo
