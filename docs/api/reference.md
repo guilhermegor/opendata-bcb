@@ -81,3 +81,25 @@ Leitura de séries temporais do SGS (Sistema Gerenciador de Séries Temporais) d
 Devolve `data` (`date`) e `valor` (`Decimal`), mais as colunas de proveniência. Intervalos
 maiores que 10 anos são divididos em janelas e concatenados. O valor é construído a partir do
 texto da fonte, nunca de `float`.
+
+### `read_currency_codes(*, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
+
+Lê a tabela de códigos de moeda da PTAX, publicada no arquivo diário
+`https://www4.bcb.gov.br/Download/fechamento/M<aaaammdd>.csv` (CSV `;`-separado em Latin-1).
+Quando a fonte responde 404 para o dia, tenta o dia útil anterior (até 5 vezes); sem nenhum,
+levanta `FileNotFoundError`. Qualquer outra falha (5xx, timeout, erro de escrita) levanta
+`OSError` em vez de recuar para um arquivo mais antigo.
+
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `currency_code` | `string` | Código da moeda com 3 dígitos (zeros à esquerda preservados) |
+| `name` | `string` | Nome da moeda |
+| `symbol` | `string` | Símbolo (ISO 4217 quando existe) |
+| `country_code` | `string` | Código do país |
+| `country` | `string` | País |
+| `currency_type` | `string` | Tipo de paridade (`A` ou `B`) |
+| `exclusion_date` | `date` | Data de exclusão da PTAX; `NA` enquanto ativa |
+| `is_active` | `bool` | `True` quando a data de exclusão está vazia |
+
+Campos em branco na fonte (algumas linhas legadas) viram `NA`. O quadro traz ainda as colunas
+de proveniência e o arquivo é guardado em cache por dia de referência.

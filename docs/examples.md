@@ -58,3 +58,16 @@ df_dolar = read_sgs_series(
     1, dt_start=date(2026, 11, 1), dt_end=date(2026, 11, 10), path_cache_dir=Path(".cache")
 )
 ```
+
+## Receita: listar as moedas ativas na PTAX
+
+A data de exclusão vazia significa que a moeda ainda é cotada; `is_active` já resolve isso.
+
+```python
+from opendata_bcb import read_currency_codes
+
+
+df_codes = read_currency_codes()
+# O código é texto de 3 dígitos; comparar com número perderia o zero à esquerda.
+print(df_codes.loc[df_codes["is_active"], ["currency_code", "symbol", "name"]])
+```
