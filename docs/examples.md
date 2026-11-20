@@ -29,3 +29,17 @@ apenas o quê.
 ```python
 # Replace with a second illustrative example.
 ```
+
+## Receita: consultar o código COMPE de um banco
+
+O cadastro traz o ISPB e o código COMPE, ambos como texto, para que os zeros à esquerda
+sobrevivam.
+
+```python
+from opendata_bcb import read_banks
+
+
+df_banks = read_banks()
+# O código é texto de 3 dígitos; filtrar por número perderia o zero à esquerda.
+print(df_banks.loc[df_banks["compe_code"] == "001", ["ispb", "full_name"]])
+```

@@ -2,6 +2,7 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
+from .ingestion.banks import read_banks
 from .main import main
 
 
@@ -14,4 +15,5 @@ except PackageNotFoundError:  # pragma: no cover - source tree without an instal
 __all__ = [
     "__version__",
     "main",
+    "read_banks",
 ]

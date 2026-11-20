@@ -16,6 +16,7 @@ delete the example once your own contracts exist.
 
 from __future__ import annotations
 
+from opendata_bcb._internal.config.contracts.banks import CONTRACT_BANKS
 from opendata_bcb._internal.config.contracts.example_source import EXAMPLE_SOURCE
 from opendata_bcb._internal.utils.tabular_reader import (
     ContractError,
@@ -25,6 +26,7 @@ from opendata_bcb._internal.utils.tabular_reader import (
 
 
 __all__ = [
+    "CONTRACT_BANKS",
     "ContractError",
     "EXAMPLE_SOURCE",
     "FileContract",
