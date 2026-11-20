@@ -46,7 +46,7 @@ _BASE_URL = "https://olinda.bcb.gov.br/olinda/servico"
 _DEFAULT_PAGE_SIZE = 1000
 _MAX_PAGES = 10_000
 _RE_BLOCK_COMMENT = re.compile(r"^\s*/\*(.*)\*/\s*$", re.DOTALL)
-_ERROR_KEYS = ("odata.error", "error", "codigo")
+_ERROR_KEYS = frozenset({"odata.error", "error", "codigo"})
 
 
 class OlindaError(Exception):
@@ -155,17 +155,103 @@ def parse_payload(str_body: str) -> list[dict[str, object]]:
         If the body is not JSON, carries an error envelope, or has no ``value`` array —
         never an empty result in disguise.
     """
-    re_match = _RE_BLOCK_COMMENT.match(str_body)
-    str_json = re_match.group(1) if re_match else str_body
+    dict_payload = _require_object(_load_json(str_body), str_body=str_body)
+    _reject_error(dict_payload)
+    return _require_rows(dict_payload, str_body=str_body)
+
+
+@type_checker
+def _load_json(str_body: str) -> object:
+    """Decode a body (optionally ``/* */``-wrapped) with decimals kept exact.
+
+    Parameters
+    ----------
+    str_body : str
+        The raw response text.
+
+    Returns
+    -------
+    object
+        The decoded JSON value.
+
+    Raises
+    ------
+    OlindaError
+        If the body is not JSON.
+    """
+    str_json = _RE_BLOCK_COMMENT.sub(r"\1", str_body)
     try:
-        payload = json.loads(str_json, parse_float=Decimal)
+        return json.loads(str_json, parse_float=Decimal)
     except json.JSONDecodeError as cls_err:
         raise OlindaError(f"Olinda body is not JSON: {str_body[:200]!r}") from cls_err
+
+
+@type_checker
+def _require_object(payload: object, *, str_body: str) -> dict[str, object]:
+    """Return ``payload`` when it is a JSON object, else raise ``OlindaError``.
+
+    Parameters
+    ----------
+    payload : object
+        The decoded JSON value.
+    str_body : str
+        The raw text, quoted in the error.
+
+    Returns
+    -------
+    dict
+        The payload.
+
+    Raises
+    ------
+    OlindaError
+        If the payload is not an object.
+    """
     if not isinstance(payload, dict):
         raise OlindaError(f"Olinda payload is not an object: {str_body[:200]!r}")
-    if any(str_key in payload for str_key in _ERROR_KEYS):
-        raise OlindaError(f"Olinda returned an error: {payload}")
-    list_rows = payload.get("value")
+    return payload
+
+
+@type_checker
+def _reject_error(dict_payload: dict[str, object]) -> None:
+    """Raise ``OlindaError`` when the payload carries an error envelope.
+
+    Parameters
+    ----------
+    dict_payload : dict
+        The decoded payload.
+
+    Raises
+    ------
+    OlindaError
+        If any of the known error keys is present.
+    """
+    if _ERROR_KEYS & dict_payload.keys():
+        raise OlindaError(f"Olinda returned an error: {dict_payload}")
+
+
+@type_checker
+def _require_rows(dict_payload: dict[str, object], *, str_body: str) -> list[dict[str, object]]:
+    """Return the ``value`` array, else raise ``OlindaError``.
+
+    Parameters
+    ----------
+    dict_payload : dict
+        The decoded payload.
+    str_body : str
+        The raw text, quoted in the error.
+
+    Returns
+    -------
+    list of dict
+        The rows.
+
+    Raises
+    ------
+    OlindaError
+        If ``value`` is missing or not an array.
+    """
+    list_rows = dict_payload.get("value")
     if not isinstance(list_rows, list):
         raise OlindaError(f"Olinda payload has no 'value' array: {str_body[:200]!r}")
     return list_rows
@@ -230,6 +316,139 @@ def fetch_frame(  # noqa: PLR0913, PLR0917 -- keyword-only reader inputs
     ContractError
         If the rows do not satisfy ``cls_contract`` (including an empty result).
     """
+    list_rows, str_content_hash, str_first_url = _fetch_all_pages(
+        str_service,
+        str_resource,
+        dict_params=dict_params,
+        str_filter=str_filter,
+        str_select=str_select,
+        int_page_size=int_page_size,
+        path_cache_dir=path_cache_dir,
+        dt_reference=dt_reference,
+        bool_use_cache=bool_use_cache,
+        fn_download=fn_download,
+    )
+    df_rows = frame_from_records(list_rows)
+    _assert_contract(df_rows, cls_contract=cls_contract)
+    return stamp_provenance(
+        df_rows,
+        str_url=str_first_url,
+        cls_contract=cls_contract,
+        str_content_hash=str_content_hash,
+        str_package_version=resolve_package_version("opendata-bcb"),
+    )
+
+
+@type_checker
+def _assert_contract(df_rows: pd.DataFrame, *, cls_contract: FileContract) -> None:
+    """Raise ``ContractError`` when the frame has fatal contract problems.
+
+    Parameters
+    ----------
+    df_rows : pd.DataFrame
+        The parsed rows.
+    cls_contract : FileContract
+        The contract to check.
+
+    Raises
+    ------
+    ContractError
+        On any fatal problem, including an empty result.
+    """
+    list_fatal = find_contract_problems(df_rows, cls_contract=cls_contract).list_fatal
+    if list_fatal:
+        raise ContractError(list_fatal)
+
+
+@type_checker
+def _fetch_page(  # noqa: PLR0913, PLR0917 -- keyword-only reader inputs
+    str_url: str,
+    *,
+    path_cache_dir: Path,
+    dt_reference: date,
+    bool_use_cache: bool,
+    fn_download: DownloadFn,
+) -> Path:
+    """Download (or read from the daily cache) one page and return its path.
+
+    Parameters
+    ----------
+    str_url : str
+        The page URL; its hash names the cache entry.
+    path_cache_dir : pathlib.Path
+        Daily cache directory.
+    dt_reference : datetime.date
+        The data's reference date.
+    bool_use_cache : bool
+        Whether an existing cache entry may be served.
+    fn_download : DownloadFn
+        Download seam.
+
+    Returns
+    -------
+    pathlib.Path
+        The cached page file.
+    """
+    return download_daily(
+        str_url,
+        path_cache_dir=path_cache_dir,
+        str_key=f"olinda-{hashlib.sha256(str_url.encode()).hexdigest()[:16]}",
+        dt_reference=dt_reference,
+        str_suffix=".json",
+        bool_use_cache=bool_use_cache,
+        fn_download=fn_download,
+    )
+
+
+@type_checker
+def _fetch_all_pages(  # noqa: PLR0913, PLR0917 -- keyword-only reader inputs  # complexity-ok: paging is one loop with its early exit and runaway guard; splitting them apart hides the termination rule
+    str_service: str,
+    str_resource: str,
+    *,
+    dict_params: dict[str, str | int | Decimal] | None,
+    str_filter: str | None,
+    str_select: str | None,
+    int_page_size: int,
+    path_cache_dir: Path,
+    dt_reference: date,
+    bool_use_cache: bool,
+    fn_download: DownloadFn,
+) -> tuple[list[dict[str, object]], str, str]:
+    """Request pages until one is shorter than ``int_page_size``.
+
+    Parameters
+    ----------
+    str_service : str
+        Olinda service.
+    str_resource : str
+        Entity set or function import.
+    dict_params : dict or None
+        Function-import parameters.
+    str_filter : str or None
+        OData ``$filter``.
+    str_select : str or None
+        OData ``$select``.
+    int_page_size : int
+        ``$top`` per request.
+    path_cache_dir : pathlib.Path
+        Daily cache directory.
+    dt_reference : datetime.date
+        The data's reference date.
+    bool_use_cache : bool
+        Whether cached pages may be served.
+    fn_download : DownloadFn
+        Download seam.
+
+    Returns
+    -------
+    tuple
+        All rows, the sha256 over every page's bytes digest, and the first page's URL.
+
+    Raises
+    ------
+    OlindaError
+        If a page is an error payload or paging does not terminate.
+    """
     list_rows: list[dict[str, object]] = []
     cls_digest = hashlib.sha256()
     str_first_url = ""
@@ -244,12 +463,10 @@ def fetch_frame(  # noqa: PLR0913, PLR0917 -- keyword-only reader inputs
             int_skip=int_page * int_page_size,
         )
         str_first_url = str_first_url or str_url
-        path_page = download_daily(
+        path_page = _fetch_page(
             str_url,
             path_cache_dir=path_cache_dir,
-            str_key=f"olinda-{hashlib.sha256(str_url.encode()).hexdigest()[:16]}",
             dt_reference=dt_reference,
-            str_suffix=".json",
             bool_use_cache=bool_use_cache,
             fn_download=fn_download,
         )
@@ -257,17 +474,5 @@ def fetch_frame(  # noqa: PLR0913, PLR0917 -- keyword-only reader inputs
         list_page = parse_payload(path_page.read_text(encoding="utf-8"))
         list_rows += list_page
         if len(list_page) < int_page_size:
-            break
-    else:
-        raise OlindaError(f"Olinda paging did not terminate after {_MAX_PAGES} pages")
-    df_rows = frame_from_records(list_rows)
-    list_fatal = find_contract_problems(df_rows, cls_contract=cls_contract).list_fatal
-    if list_fatal:
-        raise ContractError(list_fatal)
-    return stamp_provenance(
-        df_rows,
-        str_url=str_first_url,
-        cls_contract=cls_contract,
-        str_content_hash=cls_digest.hexdigest(),
-        str_package_version=resolve_package_version("opendata-bcb"),
-    )
+            return list_rows, cls_digest.hexdigest(), str_first_url
+    raise OlindaError(f"Olinda paging did not terminate after {_MAX_PAGES} pages")
