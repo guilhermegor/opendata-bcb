@@ -86,7 +86,7 @@ def find_undocumented_names(path_root: pathlib.Path) -> list:
     """
     str_text = (path_root / PATH_REFERENCE).read_text(encoding="utf-8")
     return [
-        f"symbol: `{str_n}` is in __all__ but not documented in {PATH_REFERENCE}"
+        f"symbol: `{str_n}` is in __all__ but not documented in {PATH_REFERENCE.as_posix()}"
         for str_n in list_all_names(path_root)
         if not re.search(rf"\b{re.escape(str_n)}\b", str_text)
     ]
@@ -122,8 +122,9 @@ def find_missing_poe_tasks(path_root: pathlib.Path) -> list:
     for path_doc in list_doc_files(path_root):
         str_text = path_doc.read_text(encoding="utf-8")
         set_cited = {m for str_s in list_code_snippets(str_text) for m in RE_POE.findall(str_s)}
+        str_rel = path_doc.relative_to(path_root).as_posix()
         list_findings += [
-            f"poe: {path_doc.relative_to(path_root)} cites `poe {str_t}`, not in poe_tasks*.toml"
+            f"poe: {str_rel} cites `poe {str_t}`, not in poe_tasks*.toml"
             for str_t in sorted(set_cited - set_tasks)
         ]
     return list_findings
@@ -171,7 +172,7 @@ def find_missing_paths(path_root: pathlib.Path) -> list:
     """Return findings for cited repo paths and local links that do not exist."""
     list_findings = []
     for path_doc in list_doc_files(path_root):
-        str_rel = path_doc.relative_to(path_root)
+        str_rel = path_doc.relative_to(path_root).as_posix()
         list_findings += [
             f"path: {str_rel} cites `{str_s}`, which does not exist"
             for path_c, str_s in list_cited_paths(path_doc, path_root=path_root)
