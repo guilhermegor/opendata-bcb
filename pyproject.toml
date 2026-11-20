@@ -1,11 +1,12 @@
 [tool.poetry]
 name = "opendata-bcb"
-version = "0.0.1"
+version = "0.0.0"  # set from the git tag, see docs/contributing.md#releasing
 description = "Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, Focus, boletins de cotações, cadastro de bancos), com cache e proveniência."
 authors = ["guilhermegor"]
 readme = "README.md"
 license = "MIT"
-homepage = "https://example.com/opendata-bcb"
+homepage = "https://guilhermegor.github.io/opendata-bcb/"
+documentation = "https://guilhermegor.github.io/opendata-bcb/"
 repository = "https://github.com/guilhermegor/opendata-bcb"
 keywords = ["opendata-bcb", "python", "library"]
 packages = [{ include = "opendata_bcb", from = "src" }]
@@ -27,6 +28,7 @@ classifiers = [
 [tool.poetry.urls]
 "Bug Reports" = "https://github.com/guilhermegor/opendata-bcb/issues"
 "Source" = "https://github.com/guilhermegor/opendata-bcb"
+"Documentation" = "https://guilhermegor.github.io/opendata-bcb/"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0"
@@ -70,6 +72,11 @@ mike = ">=2.1.0"
 [tool.deptry.per_rule_ignores]
 DEP002 = ["openpyxl"]
 
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
+
 [build-system]
-requires = ["poetry-core>=1.7.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.7.0", "poetry-dynamic-versioning>=1.4.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
