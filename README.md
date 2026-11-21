@@ -31,6 +31,9 @@ Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, F
 - `read_ptax_currencies`: lista de moedas cotadas pela PTAX (símbolo, nome e tipo A/B), via Olinda.
 - `read_ptax_quotes`: cotações PTAX de uma moeda em um período (Olinda), com os boletins intradiários e `Decimal`.
 - `read_ptax_usd_brl`: cotações PTAX de compra e venda do dólar em um período (Olinda), em `Decimal`.
+- `read_sgs_metadata`: nome, periodicidade e unidade de uma série do SGS.
+- `read_quote_bulletin_codes`: códigos de moeda aceitos pelo formulário de boletins de cotação.
+- `read_quote_bulletins`: boletins de fechamento de uma moeda em um período, em `Decimal`.
 
 Todo leitor guarda o arquivo em cache por dia e devolve as colunas de proveniência. Assinaturas e
 colunas em [docs/api/reference.md](docs/api/reference.md).
@@ -55,8 +58,6 @@ pip install opendata-bcb
 poetry add opendata-bcb
 ```
 
-Estes comandos funcionam depois que a primeira versão for publicada no PyPI.
-
 #### Para desenvolver
 
 ```bash
@@ -75,8 +76,16 @@ no lugar, rode o `init` por `bash bin/poe_exec.sh init`, para que o bundle de CA
 <!-- slug: usage -->
 ### Uso
 
-Rode o projeto pelos pontos de entrada em `src/`; troque este parágrafo pelos comandos que as
-pessoas usuárias executam primeiro.
+Cada leitor devolve um `pandas.DataFrame`:
+
+```python
+from opendata_bcb import read_banks
+
+df_banks = read_banks()
+print(df_banks[["ispb", "compe_code", "short_name"]].head())
+```
+
+Mais receitas em [docs/examples.md](docs/examples.md).
 
 <!-- slug: project-structure -->
 ## Estrutura do projeto
@@ -126,6 +135,24 @@ comunidade conhece; o `bin/poe_exec.sh` cobre os casos em que ele não basta:
 
 A superfície pública é o que o `__init__.py` do pacote lista em `__all__`; tudo o que está em
 `_internal/` é privado.
+
+### Garantia de API da série 1.x
+
+A partir da 1.0.0 a biblioteca segue o versionamento semântico. Dentro da série 1.x ficam estáveis:
+
+- os nomes dos dez leitores: `read_banks`, `read_currency_codes`,
+  `read_focus_annual_expectations`, `read_ptax_currencies`, `read_ptax_quotes`,
+  `read_ptax_usd_brl`, `read_quote_bulletin_codes`, `read_quote_bulletins`, `read_sgs_metadata`
+  e `read_sgs_series`, e o `__version__`;
+- os nomes dos argumentos (e se são só por palavra-chave) de cada leitor;
+- os nomes das colunas devolvidas por cada leitor, documentados em
+  [docs/api/reference.md](docs/api/reference.md).
+
+Não é parte da API, e pode mudar em qualquer versão: tudo em `opendata_bcb._internal.*`.
+
+Novos leitores, novos argumentos opcionais só por palavra-chave e novas colunas são mudanças
+aditivas e saem em versões menores (1.x). Remover ou renomear um nome estável, um argumento ou
+uma coluna só ocorre em uma versão maior (2.0).
 
 <!-- slug: publishing -->
 ## Publicação

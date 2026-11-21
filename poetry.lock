@@ -2463,18 +2463,6 @@ files = [
 wcwidth = ">=0.1.4"
 
 [[package]]
-name = "pure-schema-regimes"
-version = "0.1.0"
-description = "Per-regime schema adapters for series that change columns mid-series (zero-dependency)"
-optional = false
-python-versions = "<4.0,>=3.11"
-groups = ["main"]
-files = [
-    {file = "pure_schema_regimes-0.1.0-py3-none-any.whl", hash = "sha256:0a731bdad4f1983acf0bff87cde634d65a6315ed440b34e44ea330f760ffad72"},
-    {file = "pure_schema_regimes-0.1.0.tar.gz", hash = "sha256:3750704a214f13c1c8eb1ec3f3738410491998146349c398dfd99d964c0eb44c"},
-]
-
-[[package]]
 name = "purecalendars"
 version = "3.0.1"
 description = "Holiday calendars and business-day arithmetic for Brazilian and US markets, computed offline."
@@ -3717,4 +3705,4 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "273011c9b9440b7dd5cabf4e95f9c9b80e4c54fc3ce854d0cad32c76cfee9a86"
+content-hash = "2c1d20dacce451845fc93c7ca7f0620d67470ce442f4ca9da3f069bbe1c60528"

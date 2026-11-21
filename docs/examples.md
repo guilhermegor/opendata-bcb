@@ -8,28 +8,6 @@ receita é independente — copie e ajuste.
 
 ---
 
-## Receita: <uma tarefa comum>
-
-Descreva em poucas palavras o problema que esta receita resolve e, em seguida, mostre o menor
-trecho que funciona.
-
-```python
-from <project_name> import main
-
-
-# Replace with a real, runnable example of your public API.
-main()
-```
-
-## Receita: <outra tarefa>
-
-Adicione uma seção `##` por receita. Os comentários no código devem explicar **por quê**, não
-apenas o quê.
-
-```python
-# Replace with a second illustrative example.
-```
-
 ## Receita: consultar o código COMPE de um banco
 
 O cadastro traz o ISPB e o código COMPE, ambos como texto, para que os zeros à esquerda

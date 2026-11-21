@@ -17,29 +17,27 @@ specific to this skeleton.
 
 ⚠️ The shared boundary rule 1 (the seam knows the vendor) has one tier-specific twist here:
 a caller imports the seam **package-qualified** —
-`from <project_name>._internal.utils.http_downloader import download_file` — never a bare
+`from opendata_bcb._internal.utils.http_downloader import download_file` — never a bare
 `from utils…`, which resolves only by accident of `sys.path` and breaks once the wheel is
 installed.
 
-## What this template is
+## What this is
 
-A **PyPI-ready Python library starter**. A clean, importable package with CI, pre-commit,
-tests, docs, and PyPI + Test-PyPI release workflows ready to go. It is scaffolded by
-BlueprintX into a new project directory; the scaffold replaces the `<project_name>` package
-directory and the `pyproject.toml` placeholders via `envsubst`.
+`opendata-bcb` is a PyPI library that reads open data published by the Banco Central do Brasil.
+Its public API is the ten `read_*` functions and `__version__`; everything under
+`opendata_bcb._internal` is private.
 
 ## Layout
 
 ```
-src/<project_name>/
+src/opendata_bcb/
     __init__.py            # the public API surface (control it with __all__)
-    main.py                # library core / entry point — rename or split as it grows
+    <reader>.py            # one public module per source (banks.py, sgs.py, ptax.py, ...)
     _internal/             # PRIVATE — ships in the wheel, but not a public API
         utils/             # vendored helpers (dtypes, tabular_reader, retry/, http_downloader,
-                           #   text, zip_extractor, br_identifiers, typing/)
+                           #   text, br_identifiers, typing/)
         config/            # ALL private structural declarations (one config/CLAUDE.md maps them)
             contracts/     # FileContract declarations (one per input source)
-            ports/         # private behavioural ABCs (hexagonal ports; ABCTypeCheckerMeta) — opt-in
             # schemas/     # (opt-in) Pydantic models mirroring an external standard, or the
                            #   library's own product — the ONLY home of pydantic models
                            #   (check-layer-imports allows pydantic only in config and utils);
@@ -48,16 +46,16 @@ tests/
     unit/  integration/  performance/
 ```
 
-**Public vs private.** Consumers import `<project_name>` (your core). Everything under
-`<project_name>._internal` is vendored support code: it ships inside the wheel (so imports
+**Public vs private.** Consumers import `opendata_bcb`. Everything under
+`opendata_bcb._internal` is vendored support code: it ships inside the wheel (so imports
 resolve after `pip install`), but the leading underscore marks it off-limits — keep it out
-of your public `__all__`. The internal imports are package-qualified
-(`from <project_name>._internal.utils.dtypes import …`).
+of the public `__all__`. The internal imports are package-qualified
+(`from opendata_bcb._internal.utils.dtypes import …`).
 
 **Consumer-built schema models stay in `_internal/config/schemas/`.** When the models are the
 library's product (consumers construct them), the file location is still an implementation
 detail: re-export each class from the package `__all__` and let consumers write
-`from <project_name> import X`, never the `_internal` path. Do not move them to a public
+`from opendata_bcb import X`, never the `_internal` path. Do not move them to a public
 `schemas/` package. Accepted cost: the class's `__module__` (tracebacks, mkdocstrings paths,
 pickles) shows the `_internal` path, so moving the file later is a pickle-compatibility change.
 
@@ -73,13 +71,13 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
   **dependency injection** — otherwise a module of functions is the right shape.
 - **No redundant package-name subfolder.** When the package's whole purpose is one domain
   (e.g. `calendars`), do **not** nest a subfolder that repeats the package name
-  (`src/<project_name>/<project_name>-ish/`) — the package name already conveys the scope. Keep
-  public modules **flat** at `src/<project_name>/` (`src/<project_name>/calendar_br.py`), and put
+  (`src/opendata_bcb/opendata_bcb/`) — the package name already conveys the scope. Keep
+  public modules **flat** at `src/opendata_bcb/` (`src/opendata_bcb/banks.py`), and put
   non-exported abstract bases / internals under `_internal/`.
 - **On migration, reuse the target's own implementation.** When lifting code in from another
   repo, if this project already has an equivalent module (its own `_internal` typing engine, a
   helper), rewrite the imports to **this** project's version and discard the source's duplicate —
-  never vendor a second copy (DRY). The scaffold's own `rewrite_internal_imports` embodies this.
+  never vendor a second copy (DRY).
 
 ## Conventions (inherited from `templates/python-common/`)
 
@@ -92,17 +90,10 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
   every DataFrame on load via `apply_dtypes` (`_internal.utils.dtypes`, never pandas'
   inference), route reads through `_internal.utils.tabular_reader`, and use
   `_internal.utils.br_identifiers` for CNPJ/CPF (alphanumeric-aware for the 2026 CNPJ).
-- **No `.env`** — a distributable library has no runtime env to seed (unlike the service
-  tiers), so none is shipped. This does not block the opt-in OTLP log exporter
-  (`_internal/utils/otel_logging.py`, blueprintx#438): it reads
-  `OTEL_EXPORTER_OTLP_ENDPOINT` etc. from the **consumer's own process environment** at call
-  time — the same "the host configures the env, the library ships no file" pattern
-  `ts_lib.sh` already uses. `configure_otel_logging(logger)` is injected, never auto-run on
-  import, matching the dependency-injection rule below.
+- **No `.env`** — a distributable library has no runtime env to seed, so none is shipped.
 - **Logging via dependency injection** — never hard-import a logging backend in a helper;
   inject a logger (stdlib default), as `_internal/utils/retry/log_emitter.py`'s `LogEmitter`
-  shows. The
-  in-repo `logs.py` helper is **opt-in** at scaffold time; see `_internal/utils/CLAUDE.md`.
+  shows; see `_internal/utils/CLAUDE.md`.
 - **Every imported package is a direct dependency.** If a module `import`s a package, declare
   it in `pyproject.toml` — even when it is already installed transitively via another dep. A
   transitive presence is an accident of another package's tree and breaks silently the day that
@@ -151,15 +142,8 @@ The first `release-pypi.yaml` run creates the `gh-pages` branch, but `GITHUB_TOK
 the Pages source (it needs admin rights). The `deploy_docs` job prints the remedy in its job
 summary: run `poe enable_pages` once afterwards.
 
-## Extending this template
+## Extending the library
 
-- Keep `src/<project_name>/` as the importable package root; grow the public API there.
-- Add sub-packages as the project grows — do not dump everything into `main.py`.
+- Keep `src/opendata_bcb/` as the importable package root; grow the public API there.
+- Add sub-packages as the project grows — keep one public module per source.
 - Mirror the test folder hierarchy to match the package structure.
-- Drop `_internal/config/contracts` (and the pandas deps) if the library never reads
-  tabular inputs.
-
-## Placeholder files (remove before 1.0.0)
-
-The example boilerplate is `main()` in `main.py`, its test in `tests/unit/test_main.py` and the `main` re-export in the package
-`__init__.py`. Delete or replace them, and every doc or example that still shows the greeting.
