@@ -35,6 +35,9 @@ apenas o quê.
 O cadastro traz o ISPB e o código COMPE, ambos como texto, para que os zeros à esquerda
 sobrevivam.
 
+O quadro cobre apenas os participantes do STR (diretos ou indiretos), não todos os bancos do
+Brasil; instituições que participam somente do PIX não aparecem.
+
 ```python
 from opendata_bcb import read_banks
 

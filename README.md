@@ -18,7 +18,7 @@
 <!-- slug: overview -->
 ## Visão geral
 
-Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, Focus, boletins de cotações, cadastro de bancos), com cache e proveniência.
+Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, Focus, boletins de cotações, participantes do STR), com cache e proveniência.
 
 <!-- optional section: delete it when the project has no feature list -->
 <!-- slug: features -->
