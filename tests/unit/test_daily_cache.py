@@ -1,6 +1,7 @@
 """Unit tests for the daily cache's directory and entry safety checks."""
 
 from datetime import date
+import os
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,9 @@ from opendata_bcb._internal.utils import daily_cache
 
 
 _DT_DAY = date(2026, 11, 21)
+_POSIX_ONLY = pytest.mark.skipif(
+    not hasattr(os, "getuid"), reason="owner and mode checks exist only where uids do"
+)
 
 
 def _fake_download(*, str_url: str, path_dest: Path) -> Path:
@@ -51,6 +55,7 @@ def test_resolve_cache_dir_falls_back_to_home_cache(
     assert daily_cache.resolve_cache_dir(None) == tmp_path / ".cache" / "opendata-bcb"
 
 
+@_POSIX_ONLY
 def test_download_daily_creates_private_dir(tmp_path: Path) -> None:
     """A missing cache directory is created readable by the owner only."""
     path_dir = tmp_path / "cache"
@@ -58,6 +63,7 @@ def test_download_daily_creates_private_dir(tmp_path: Path) -> None:
     assert path_dir.stat().st_mode & 0o777 == 0o700
 
 
+@_POSIX_ONLY
 def test_download_daily_refuses_group_writable_dir(tmp_path: Path) -> None:
     """A directory others can write into is refused, not read."""
     path_dir = tmp_path / "shared"
@@ -67,6 +73,7 @@ def test_download_daily_refuses_group_writable_dir(tmp_path: Path) -> None:
         _download(path_dir)
 
 
+@_POSIX_ONLY
 def test_download_daily_refuses_foreign_owned_dir(
     *, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
