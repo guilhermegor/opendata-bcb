@@ -156,3 +156,19 @@ from opendata_bcb import read_sgs_metadata
 df_meta = read_sgs_metadata(433)
 print(df_meta[["code", "name", "periodicity", "unit"]])
 ```
+
+## Receita: PTAX de uma moeda com os boletins do dia
+
+Cada data traz os boletins de abertura, intermediários e de fechamento; filtre por
+`bulletin_type` para ficar com um deles.
+
+```python
+from datetime import date
+
+from opendata_bcb import read_ptax_quotes
+
+
+df_euro = read_ptax_quotes("EUR", dt_start=date(2026, 11, 3), dt_end=date(2026, 11, 5))
+df_fechamento = df_euro[df_euro["bulletin_type"] == "Fechamento"]
+print(df_fechamento[["quoted_at", "buy_rate", "sell_rate"]])
+```
