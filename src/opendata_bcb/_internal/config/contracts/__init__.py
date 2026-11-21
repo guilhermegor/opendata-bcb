@@ -13,6 +13,7 @@ from opendata_bcb._internal.config.contracts.banks import CONTRACT_BANKS
 from opendata_bcb._internal.config.contracts.currency_codes import CONTRACT_CURRENCY_CODES
 from opendata_bcb._internal.config.contracts.focus import CONTRACT_FOCUS_ANNUAL
 from opendata_bcb._internal.config.contracts.ptax_currencies import PTAX_CURRENCIES
+from opendata_bcb._internal.config.contracts.ptax_quotes import PTAX_QUOTES
 from opendata_bcb._internal.config.contracts.ptax_usd_brl import PTAX_USD_BRL
 from opendata_bcb._internal.config.contracts.quote_bulletins import (
     CONTRACT_QUOTE_BULLETIN_CODES,
@@ -37,5 +38,6 @@ __all__ = [
     "find_contract_problems",
     "find_file_problems",
     "PTAX_CURRENCIES",
+    "PTAX_QUOTES",
     "PTAX_USD_BRL",
 ]
