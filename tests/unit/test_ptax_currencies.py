@@ -14,6 +14,8 @@ from opendata_bcb.ptax import read_ptax_currencies
 PATH_FIXTURE = Path(__file__).parent.parent / "fixtures" / "ptax" / "moedas.json"
 LIST_PROVENANCE = ["url", "updated_at", "source_key", "package_version", "ingestion_run_id"]
 
+DT_REFERENCE = date(2026, 11, 20)
+
 
 class _FakeDownload:
     """Download stand-in serving the real fixture and recording each requested URL."""
@@ -31,8 +33,9 @@ class _FakeDownload:
 
 
 def _read(tmp_path: Path, *, cls_fake: _FakeDownload, **kwargs: object) -> pd.DataFrame:
-    """Run the reader against the fake download."""
-    return read_ptax_currencies(path_cache_dir=tmp_path, fn_download=cls_fake, **kwargs)
+    """Run the reader against the fake download, on a fixed day unless the test names one."""
+    dict_kwargs = {"dt_reference": DT_REFERENCE, **kwargs}
+    return read_ptax_currencies(path_cache_dir=tmp_path, fn_download=cls_fake, **dict_kwargs)
 
 
 def test_read_ptax_currencies_data_columns_come_first(tmp_path: Path) -> None:
