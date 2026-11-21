@@ -33,7 +33,7 @@ directory and the `pyproject.toml` placeholders via `envsubst`.
 ```
 src/<project_name>/
     __init__.py            # the public API surface (control it with __all__)
-    main.py                # library core / entry point — rename or split as it grows
+    <reader>.py            # one public module per source (banks.py, sgs.py, ptax.py, ...)
     _internal/             # PRIVATE — ships in the wheel, but not a public API
         utils/             # vendored helpers (dtypes, tabular_reader, retry/, http_downloader,
                            #   text, zip_extractor, br_identifiers, typing/)
@@ -154,12 +154,7 @@ summary: run `poe enable_pages` once afterwards.
 ## Extending this template
 
 - Keep `src/<project_name>/` as the importable package root; grow the public API there.
-- Add sub-packages as the project grows — do not dump everything into `main.py`.
+- Add sub-packages as the project grows — keep one public module per source.
 - Mirror the test folder hierarchy to match the package structure.
 - Drop `_internal/config/contracts` (and the pandas deps) if the library never reads
   tabular inputs.
-
-## Placeholder files (remove before 1.0.0)
-
-The example boilerplate is `main()` in `main.py`, its test in `tests/unit/test_main.py` and the `main` re-export in the package
-`__init__.py`. Delete or replace them, and every doc or example that still shows the greeting.
