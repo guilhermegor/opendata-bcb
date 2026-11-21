@@ -589,6 +589,72 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#receita-expectativas-anuais-do-focus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: expectativas anuais do Focus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#receita-ptax-dolarreal-em-um-periodo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: PTAX dólar/real em um período
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#receita-moedas-cotadas-pela-ptax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: moedas cotadas pela PTAX
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#receita-boletins-de-cotacao-de-uma-moeda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: boletins de cotação de uma moeda
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#receita-metadados-de-uma-serie-do-sgs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: metadados de uma série do SGS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#receita-ptax-de-uma-moeda-com-os-boletins-do-dia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: PTAX de uma moeda com os boletins do dia
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1011,6 +1077,72 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#receita-expectativas-anuais-do-focus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: expectativas anuais do Focus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#receita-ptax-dolarreal-em-um-periodo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: PTAX dólar/real em um período
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#receita-moedas-cotadas-pela-ptax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: moedas cotadas pela PTAX
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#receita-boletins-de-cotacao-de-uma-moeda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: boletins de cotação de uma moeda
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#receita-metadados-de-uma-serie-do-sgs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: metadados de uma série do SGS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#receita-ptax-de-uma-moeda-com-os-boletins-do-dia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Receita: PTAX de uma moeda com os boletins do dia
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1056,6 +1188,8 @@ apenas o quê.</p>
 <h2 id="receita-consultar-o-codigo-compe-de-um-banco">Receita: consultar o código COMPE de um banco<a class="headerlink" href="#receita-consultar-o-codigo-compe-de-um-banco" title="Permanent link">&para;</a></h2>
 <p>O cadastro traz o ISPB e o código COMPE, ambos como texto, para que os zeros à esquerda
 sobrevivam.</p>
+<p>O quadro cobre apenas os participantes do STR (diretos ou indiretos), não todos os bancos do
+Brasil; instituições que participam somente do PIX não aparecem.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">opendata_bcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_banks</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
@@ -1090,6 +1224,69 @@ sobrevivam.</p>
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">df_codes</span> <span class="o">=</span> <span class="n">read_quote_bulletin_codes</span><span class="p">()</span>
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># O código é texto: é o valor que o formulário do BCB espera, sem conversão numérica.</span>
 </span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">df_codes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_codes</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">"ZLOTY"</span><span class="p">),</span> <span class="p">[</span><span class="s2">"code"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">]])</span>
+</span></code></pre></div>
+<h2 id="receita-expectativas-anuais-do-focus">Receita: expectativas anuais do Focus<a class="headerlink" href="#receita-expectativas-anuais-do-focus" title="Permanent link">&para;</a></h2>
+<p>Lê as expectativas de IPCA da pesquisa Focus em uma semana. As estatísticas são <code>Decimal</code>, sem
+perda de precisão, e <code>numeroRespondentes</code> é inteiro.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">opendata_bcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_focus_annual_expectations</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">df_ipca</span> <span class="o">=</span> <span class="n">read_focus_annual_expectations</span><span class="p">(</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="s2">"IPCA"</span><span class="p">,</span> <span class="n">dt_start</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="n">dt_end</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">13</span><span class="p">)</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">)</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">df_ipca</span><span class="p">[[</span><span class="s2">"Data"</span><span class="p">,</span> <span class="s2">"DataReferencia"</span><span class="p">,</span> <span class="s2">"Mediana"</span><span class="p">,</span> <span class="s2">"numeroRespondentes"</span><span class="p">]])</span>
+</span></code></pre></div>
+<h2 id="receita-ptax-dolarreal-em-um-periodo">Receita: PTAX dólar/real em um período<a class="headerlink" href="#receita-ptax-dolarreal-em-um-periodo" title="Permanent link">&para;</a></h2>
+<p>As taxas são <code>Decimal</code> e <code>quoted_at</code> mantém o horário do boletim.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">opendata_bcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ptax_usd_brl</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">df_ptax</span> <span class="o">=</span> <span class="n">read_ptax_usd_brl</span><span class="p">(</span><span class="n">dt_start</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dt_end</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">df_ptax</span><span class="p">[[</span><span class="s2">"quoted_at"</span><span class="p">,</span> <span class="s2">"buy_rate"</span><span class="p">,</span> <span class="s2">"sell_rate"</span><span class="p">]])</span>
+</span></code></pre></div>
+<h2 id="receita-moedas-cotadas-pela-ptax">Receita: moedas cotadas pela PTAX<a class="headerlink" href="#receita-moedas-cotadas-pela-ptax" title="Permanent link">&para;</a></h2>
+<p>Lista os símbolos, nomes e tipos (<code>A</code> ou <code>B</code>) das moedas que a PTAX cota.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">opendata_bcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ptax_currencies</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">df_moedas</span> <span class="o">=</span> <span class="n">read_ptax_currencies</span><span class="p">()</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">df_moedas</span><span class="p">[[</span><span class="s2">"symbol"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"currency_type"</span><span class="p">]])</span>
+</span></code></pre></div>
+<h2 id="receita-boletins-de-cotacao-de-uma-moeda">Receita: boletins de cotação de uma moeda<a class="headerlink" href="#receita-boletins-de-cotacao-de-uma-moeda" title="Permanent link">&para;</a></h2>
+<p>Lê os boletins de fechamento do dólar (código <code>"61"</code>, veja <code>read_quote_bulletin_codes</code>) em um
+período. As taxas e paridades são <code>Decimal</code>, sem perda de precisão.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">opendata_bcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_quote_bulletins</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">df_boletins</span> <span class="o">=</span> <span class="n">read_quote_bulletins</span><span class="p">(</span><span class="s2">"61"</span><span class="p">,</span> <span class="n">dt_start</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">dt_end</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">19</span><span class="p">))</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">df_boletins</span><span class="p">[[</span><span class="s2">"date"</span><span class="p">,</span> <span class="s2">"buy_rate"</span><span class="p">,</span> <span class="s2">"sell_rate"</span><span class="p">]])</span>
+</span></code></pre></div>
+<h2 id="receita-metadados-de-uma-serie-do-sgs">Receita: metadados de uma série do SGS<a class="headerlink" href="#receita-metadados-de-uma-serie-do-sgs" title="Permanent link">&para;</a></h2>
+<p>Lê o nome, a periodicidade e a unidade da série 433 (IPCA). A periodicidade vem como a letra
+da fonte (<code>M</code> para mensal).</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">opendata_bcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_sgs_metadata</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">df_meta</span> <span class="o">=</span> <span class="n">read_sgs_metadata</span><span class="p">(</span><span class="mi">433</span><span class="p">)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">df_meta</span><span class="p">[[</span><span class="s2">"code"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"periodicity"</span><span class="p">,</span> <span class="s2">"unit"</span><span class="p">]])</span>
+</span></code></pre></div>
+<h2 id="receita-ptax-de-uma-moeda-com-os-boletins-do-dia">Receita: PTAX de uma moeda com os boletins do dia<a class="headerlink" href="#receita-ptax-de-uma-moeda-com-os-boletins-do-dia" title="Permanent link">&para;</a></h2>
+<p>Cada data traz os boletins de abertura, intermediários e de fechamento; filtre por
+<code>bulletin_type</code> para ficar com um deles.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">opendata_bcb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_ptax_quotes</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">df_euro</span> <span class="o">=</span> <span class="n">read_ptax_quotes</span><span class="p">(</span><span class="s2">"EUR"</span><span class="p">,</span> <span class="n">dt_start</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dt_end</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="n">df_fechamento</span> <span class="o">=</span> <span class="n">df_euro</span><span class="p">[</span><span class="n">df_euro</span><span class="p">[</span><span class="s2">"bulletin_type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Fechamento"</span><span class="p">]</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">df_fechamento</span><span class="p">[[</span><span class="s2">"quoted_at"</span><span class="p">,</span> <span class="s2">"buy_rate"</span><span class="p">,</span> <span class="s2">"sell_rate"</span><span class="p">]])</span>
 </span></code></pre></div>
 
 
