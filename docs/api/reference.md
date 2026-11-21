@@ -60,8 +60,10 @@ Leitura de séries temporais do SGS (Sistema Gerenciador de Séries Temporais) d
 
 Devolve `data` (`date`) e `valor` (`Decimal`), mais as colunas de proveniência. Intervalos
 maiores que 10 anos são divididos em janelas e concatenados. O valor é construído a partir do
-texto da fonte, nunca de `float`. Cada janela fica em cache por dia de referência (hoje, por
-padrão), então uma revisão do BCB em valores passados aparece na leitura do dia seguinte.
+texto da fonte, nunca de `float`. Cada janela fica em cache por dia de referência
+(`dt_reference`), então uma revisão do BCB em valores passados aparece quando esse dia muda,
+o que, com o padrão (hoje), acontece no dia seguinte. Quem fixa o mesmo `dt_reference`
+continua recebendo a cópia em cache.
 
 ### `read_sgs_metadata(int_code, *, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
 

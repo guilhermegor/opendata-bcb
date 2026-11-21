@@ -120,7 +120,8 @@ def read_sgs_series(
     """Read one SGS series for a date range.
 
     Each window is cached per reference day, so a BCB revision of past values is picked up
-    on the next day's read.
+    once ``dt_reference`` changes: the next day under the default (today). A caller pinning
+    the same ``dt_reference`` keeps getting the cached copy.
 
     Parameters
     ----------
