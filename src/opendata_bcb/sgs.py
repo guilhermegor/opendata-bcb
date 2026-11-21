@@ -10,12 +10,11 @@ from __future__ import annotations
 from datetime import date, timedelta
 import json
 from pathlib import Path
-import tempfile
 from typing import TYPE_CHECKING
 
 import pandas as pd
 
-from opendata_bcb._internal.utils.daily_cache import download_daily
+from opendata_bcb._internal.utils.daily_cache import download_daily, resolve_cache_dir
 from opendata_bcb._internal.utils.http_downloader import DownloadFn, download_file
 from opendata_bcb._internal.utils.provenance import (
     read_artifact,
@@ -147,7 +146,7 @@ def read_sgs_series(
     """
     list_records: list[dict[str, str]] = []
     list_hashes: list[str] = []
-    path_dir = path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache"
+    path_dir = resolve_cache_dir(path_cache_dir)
     dt_day = dt_reference or date.today()
     for dt_win_start, dt_win_end in _split_windows(dt_start, dt_end=dt_end):
         str_url = _URL_VALUES.format(
@@ -214,7 +213,7 @@ def read_sgs_metadata(
     str_url = _URL_METADATA.format(code=int_code)
     path_raw = download_daily(
         str_url,
-        path_cache_dir=path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache",
+        path_cache_dir=resolve_cache_dir(path_cache_dir),
         str_key=f"sgs-metadata-{int_code}",
         dt_reference=dt_reference or date.today(),
         str_suffix=".xml",

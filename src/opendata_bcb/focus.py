@@ -9,12 +9,12 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
-import tempfile
 
 import pandas as pd
 
 from opendata_bcb._internal.config.contracts import CONTRACT_FOCUS_ANNUAL
 from opendata_bcb._internal.olinda import fetch_frame
+from opendata_bcb._internal.utils.daily_cache import resolve_cache_dir
 from opendata_bcb._internal.utils.focus_frame import type_focus_annual
 from opendata_bcb._internal.utils.http_downloader import DownloadFn, download_file
 from opendata_bcb._internal.utils.typing import type_checker
@@ -106,7 +106,7 @@ def read_focus_annual_expectations(
         _STR_SERVICE,
         _STR_RESOURCE,
         cls_contract=CONTRACT_FOCUS_ANNUAL,
-        path_cache_dir=path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache",
+        path_cache_dir=resolve_cache_dir(path_cache_dir),
         dt_reference=dt_reference or date.today(),
         str_filter=_build_filter(str_indicator, dt_start=dt_start, dt_end=dt_end),
         bool_use_cache=bool_use_cache,

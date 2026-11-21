@@ -10,13 +10,12 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
-import tempfile
 
 import pandas as pd
 
 from opendata_bcb._internal.config.contracts import CONTRACT_BANKS
 from opendata_bcb._internal.utils.banks_frame import normalise_banks
-from opendata_bcb._internal.utils.daily_cache import DownloadFn, download_daily
+from opendata_bcb._internal.utils.daily_cache import DownloadFn, download_daily, resolve_cache_dir
 from opendata_bcb._internal.utils.http_downloader import download_file
 from opendata_bcb._internal.utils.provenance import (
     read_artifact,
@@ -67,7 +66,7 @@ def read_banks(
         columns.
     """
     dt_day = dt_reference or date.today()
-    path_dir = path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache"
+    path_dir = resolve_cache_dir(path_cache_dir)
     path_csv = download_daily(
         _URL_BANKS,
         path_cache_dir=path_dir,

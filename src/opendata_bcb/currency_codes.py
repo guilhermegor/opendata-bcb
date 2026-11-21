@@ -9,13 +9,12 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
-import tempfile
 
 import pandas as pd
 
 from opendata_bcb._internal.config.contracts import CONTRACT_CURRENCY_CODES
 from opendata_bcb._internal.utils.currency_codes_frame import normalise_currency_codes
-from opendata_bcb._internal.utils.daily_cache import DownloadFn, download_daily
+from opendata_bcb._internal.utils.daily_cache import DownloadFn, download_daily, resolve_cache_dir
 from opendata_bcb._internal.utils.dates import add_working_days
 from opendata_bcb._internal.utils.http_downloader import download_file
 from opendata_bcb._internal.utils.provenance import (
@@ -177,7 +176,7 @@ def read_currency_codes(
     FileNotFoundError
         When no file exists for the reference day nor the fallback business days.
     """
-    path_dir = path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache"
+    path_dir = resolve_cache_dir(path_cache_dir)
     path_csv, str_url = _locate_file(
         dt_reference or date.today(),
         path_dir=path_dir,
