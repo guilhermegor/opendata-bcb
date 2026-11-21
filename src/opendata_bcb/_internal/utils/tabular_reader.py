@@ -37,6 +37,7 @@ from collections import Counter
 from collections.abc import Sequence
 import csv
 from dataclasses import dataclass
+import io
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, Protocol
@@ -181,6 +182,7 @@ def read_table(  # noqa: PLR0913 — the public reader API; each argument is a r
     str_encoding: str = "utf-8-sig",
     int_header_row: int = 0,
     int_csv_quoting: int = csv.QUOTE_MINIMAL,
+    bytes_content: bytes | None = None,
 ) -> pd.DataFrame:
     """Read a file (Excel/CSV/JSON) into a typed, contract-validated DataFrame.
 
@@ -224,6 +226,10 @@ def read_table(  # noqa: PLR0913 — the public reader API; each argument is a r
         ``;``-delimited regulatory dumps (e.g. CVM open data), where an upstream submitter's
         stray ``"`` is literal text, not a field wrapper — the default engine would swallow the
         delimiter and shift subsequent columns, corrupting the parse. Ignored otherwise.
+    bytes_content : bytes, optional
+        CSV only: the already-read file bytes to parse instead of reopening ``path_file``, so a
+        caller that hashed those bytes parses exactly what it hashed. ``path_file`` still names
+        the file (its extension picks the reader).
 
     Returns
     -------
@@ -251,6 +257,7 @@ def read_table(  # noqa: PLR0913 — the public reader API; each argument is a r
         str_encoding=str_encoding,
         int_header_row=int_header_row,
         int_csv_quoting=int_csv_quoting,
+        bytes_content=bytes_content,
     )
     return _finalize(
         df_raw,
@@ -589,7 +596,7 @@ def _finalize(
 
 
 @type_checker
-def _read_raw(
+def _read_raw(  # noqa: PLR0913 — mirrors read_table's options
     path_file: Path,
     *,
     str_sheet: str,
@@ -599,6 +606,7 @@ def _read_raw(
     str_encoding: str = "utf-8-sig",
     int_header_row: int = 0,
     int_csv_quoting: int = csv.QUOTE_MINIMAL,
+    bytes_content: bytes | None = None,
 ) -> pd.DataFrame:
     """Read a file into a raw DataFrame and normalise its column NAMES.
 
@@ -622,6 +630,7 @@ def _read_raw(
         str_encoding=str_encoding,
         int_header_row=int_header_row,
         int_csv_quoting=int_csv_quoting,
+        bytes_content=bytes_content,
     )
     list_normalised = [str(col).strip() for col in df_raw.columns]
     dict_counts = Counter(list_normalised)
@@ -639,7 +648,7 @@ def _read_raw(
 
 
 @type_checker
-def _read_raw_dispatch(
+def _read_raw_dispatch(  # noqa: PLR0913 — mirrors read_table's options
     path_file: Path,
     *,
     str_sheet: str,
@@ -649,6 +658,7 @@ def _read_raw_dispatch(
     str_encoding: str = "utf-8-sig",
     int_header_row: int = 0,
     int_csv_quoting: int = csv.QUOTE_MINIMAL,
+    bytes_content: bytes | None = None,
 ) -> pd.DataFrame:
     """Read a file into a raw DataFrame, dispatching by extension (CSV, JSON, or Excel).
 
@@ -673,6 +683,8 @@ def _read_raw_dispatch(
     int_csv_quoting : int, optional
         CSV :mod:`csv` quoting constant (default ``csv.QUOTE_MINIMAL``). ``csv.QUOTE_NONE``
         treats a stray ``"`` as literal text — correct for ``;``-delimited regulatory dumps.
+    bytes_content : bytes, optional
+        CSV only: parse these bytes instead of opening ``path_file``.
 
     Returns
     -------
@@ -684,11 +696,18 @@ def _read_raw_dispatch(
     FileNotFoundError
         If ``path_file`` does not exist (fail fast at the read boundary).
     """
-    if not path_file.exists():
-        raise FileNotFoundError(f"File not found: {path_file}")
+    if bytes_content is not None:
+        return _read_csv_raw(
+            io.BytesIO(bytes_content),
+            str_dtype=str_dtype,
+            str_csv_sep=str_csv_sep,
+            list_columns=list_columns,
+            str_encoding=str_encoding,
+            int_csv_quoting=int_csv_quoting,
+        )
     fn_reader = _DICT_RAW_READERS.get(path_file.suffix.lower(), _read_excel_raw)
     return fn_reader(
-        path_file,
+        _require_file(path_file),
         str_sheet=str_sheet,
         str_dtype=str_dtype,
         str_csv_sep=str_csv_sep,
@@ -700,8 +719,32 @@ def _read_raw_dispatch(
 
 
 @type_checker
+def _require_file(path_file: Path) -> Path:
+    """Return ``path_file`` once it is known to exist.
+
+    Parameters
+    ----------
+    path_file : pathlib.Path
+        The file a raw reader is about to open.
+
+    Returns
+    -------
+    pathlib.Path
+        ``path_file``, unchanged.
+
+    Raises
+    ------
+    FileNotFoundError
+        If ``path_file`` does not exist (fail fast at the read boundary).
+    """
+    if not path_file.exists():
+        raise FileNotFoundError(f"File not found: {path_file}")
+    return path_file
+
+
+@type_checker
 def _read_csv_raw(
-    path_file: Path,
+    path_file: Path | io.BytesIO,
     *,
     str_dtype: str | None = None,
     str_csv_sep: str = ",",

@@ -8,7 +8,6 @@ to an exact :class:`decimal.Decimal`, never a float.
 from __future__ import annotations
 
 from datetime import date, timedelta
-import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -19,7 +18,7 @@ import pandas as pd
 from opendata_bcb._internal.utils.daily_cache import download_daily
 from opendata_bcb._internal.utils.http_downloader import DownloadFn, download_file
 from opendata_bcb._internal.utils.provenance import (
-    hash_artifact,
+    read_artifact,
     resolve_package_version,
     stamp_provenance,
 )
@@ -154,8 +153,9 @@ def read_sgs_series(
             bool_use_cache=bool_use_cache,
             fn_download=fn_download,
         )
-        list_hashes.append(hash_artifact(path_raw))
-        list_records.extend(json.loads(path_raw.read_text(encoding="utf-8")))
+        bytes_raw, str_hash = read_artifact(path_raw)
+        list_hashes.append(str_hash)
+        list_records.extend(json.loads(bytes_raw.decode("utf-8")))
     df_typed = build_values_frame(list_records)
     return stamp_provenance(
         df_typed,
@@ -212,11 +212,11 @@ def read_sgs_metadata(
         bool_use_cache=bool_use_cache,
         fn_download=fn_download,
     )
-    bytes_raw = path_raw.read_bytes()
+    bytes_raw, str_hash = read_artifact(path_raw)
     return stamp_provenance(
         build_metadata_frame(bytes_raw),
         str_url=str_url,
         cls_contract=_CONTRACT_METADATA,
-        str_content_hash=hashlib.sha256(bytes_raw).hexdigest(),
+        str_content_hash=str_hash,
         str_package_version=resolve_package_version("opendata-bcb"),
     )

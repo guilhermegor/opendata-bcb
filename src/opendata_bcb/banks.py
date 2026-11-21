@@ -19,7 +19,7 @@ from opendata_bcb._internal.utils.banks_frame import normalise_banks
 from opendata_bcb._internal.utils.daily_cache import DownloadFn, download_daily
 from opendata_bcb._internal.utils.http_downloader import download_file
 from opendata_bcb._internal.utils.provenance import (
-    hash_artifact,
+    read_artifact,
     resolve_package_version,
     stamp_provenance,
 )
@@ -71,18 +71,20 @@ def read_banks(
         bool_use_cache=bool_use_cache,
         fn_download=fn_download,
     )
+    bytes_csv, str_hash = read_artifact(path_csv)
     df_raw = read_table(
         path_csv,
         str_sheet="",
         dict_dtypes=dict.fromkeys(CONTRACT_BANKS.tuple_required, "str"),
         cls_contract=CONTRACT_BANKS,
         str_csv_sep=",",
+        bytes_content=bytes_csv,
     )
     df_banks = normalise_banks(df_raw)
     return stamp_provenance(
         df_banks,
         str_url=_URL_BANKS,
         cls_contract=CONTRACT_BANKS,
-        str_content_hash=hash_artifact(path_csv),
+        str_content_hash=str_hash,
         str_package_version=resolve_package_version("opendata-bcb"),
     )
