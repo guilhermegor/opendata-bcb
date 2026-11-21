@@ -218,3 +218,24 @@ ainda as colunas de proveniência (`url`, `updated_at`, `source_key`, `package_v
 `ingestion_run_id`, `content_hash`). As páginas são guardadas em cache por dia de referência
 (`dt_reference`, hoje por padrão): duas leituras no mesmo dia baixam uma vez, e um período que
 termina hoje é baixado de novo amanhã, já com as cotações publicadas depois.
+
+### `read_ptax_quotes(str_currency, *, dt_start, dt_end, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
+
+Lê as cotações PTAX de uma moeda em um período, incluindo os boletins intradiários, via
+`CotacaoMoedaPeriodo(moeda=, dataInicial=, dataFinalCotacao=)`. `str_currency` é o símbolo da
+moeda (por exemplo `EUR`, veja `read_ptax_currencies`); as datas vão como `MM-DD-AAAA`. Se
+`dt_start` for posterior a `dt_end`, levanta `ValueError`; um período sem cotações levanta
+`ContractError` em vez de devolver um quadro vazio.
+
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `buy_parity` | `Decimal` | Paridade de compra, construída a partir do texto da fonte |
+| `sell_parity` | `Decimal` | Paridade de venda, construída a partir do texto da fonte |
+| `buy_rate` | `Decimal` | Cotação de compra, construída a partir do texto da fonte |
+| `sell_rate` | `Decimal` | Cotação de venda, construída a partir do texto da fonte |
+| `quoted_at` | `datetime64` | Data e hora do boletim, com horário e microssegundos |
+| `bulletin_type` | `str` | Tipo do boletim: `Abertura`, `Intermediário` ou `Fechamento` |
+
+Os boletins não são filtrados: cada data traz várias linhas, e `bulletin_type` serve para
+escolher uma delas. O quadro traz ainda as colunas de proveniência. As páginas são guardadas
+em cache por dia de referência (`dt_reference`, hoje por padrão), nunca por `dt_end`.
