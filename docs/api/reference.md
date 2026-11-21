@@ -82,6 +82,13 @@ Devolve `data` (`date`) e `valor` (`Decimal`), mais as colunas de proveniência.
 maiores que 10 anos são divididos em janelas e concatenados. O valor é construído a partir do
 texto da fonte, nunca de `float`.
 
+### `read_sgs_metadata(int_code, *, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
+
+Devolve uma linha com os metadados da série, lidos do WebService do SGS (`getUltimoValorXML`):
+`code` (inteiro), `name`, `periodicity` (letra da fonte, por exemplo `M`) e `unit`, mais as
+colunas de proveniência. O serviço não informa a data de início da série, então ela não é devolvida. A `periodicity` é o código de letra da fonte, sem tradução. O resultado é
+guardado em cache por dia; `dt_reference` (padrão: hoje) define a chave do cache.
+
 ---
 
 ## Módulo: `currency_codes`

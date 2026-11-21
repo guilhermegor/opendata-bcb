@@ -8,8 +8,10 @@ to an exact :class:`decimal.Decimal`, never a float.
 from __future__ import annotations
 
 from datetime import date, timedelta
+import hashlib
 import json
 from pathlib import Path
+import tempfile
 from typing import TYPE_CHECKING
 
 import pandas as pd
@@ -21,7 +23,7 @@ from opendata_bcb._internal.utils.provenance import (
     resolve_package_version,
     stamp_provenance,
 )
-from opendata_bcb._internal.utils.sgs_frames import build_values_frame
+from opendata_bcb._internal.utils.sgs_frames import build_metadata_frame, build_values_frame
 from opendata_bcb._internal.utils.tabular_reader import (
     FileContract,  # noqa: TID251 -- contracts are constructed here
 )
@@ -44,6 +46,12 @@ else:
 _URL_VALUES = (
     "https://api.bcb.gov.br/dados/serie/bcdata.sgs.{code}/dados"
     "?formato=json&dataInicial={start}&dataFinal={end}"
+)
+_URL_METADATA = (
+    "https://www3.bcb.gov.br/wssgs/services/FachadaWSSGS?method=getUltimoValorXML&in0={code}"
+)
+_CONTRACT_METADATA = FileContract(
+    "SGS metadata", "sgs_metadata", ("code", "name", "periodicity", "unit"), ()
 )
 _DAYS_PER_WINDOW = 3650
 _CONTRACT_VALUES = FileContract("SGS values", "sgs_values", ("data", "valor"), ())
@@ -156,5 +164,59 @@ def read_sgs_series(
         ),
         cls_contract=_CONTRACT_VALUES,
         str_content_hash=";".join(list_hashes),
+        str_package_version=resolve_package_version("opendata-bcb"),
+    )
+
+
+@type_checker
+def read_sgs_metadata(
+    int_code: int,
+    *,
+    dt_reference: date | None = None,
+    path_cache_dir: Path | None = None,
+    bool_use_cache: bool = True,
+    fn_download: DownloadFn = download_file,
+) -> pd.DataFrame:
+    """Read the descriptive metadata of one SGS series.
+
+    The source is the SGS WebService (``getUltimoValorXML``), which carries the series name,
+    periodicity and unit. It does not expose the series start date. The metadata is stable
+    within a day, so it is cached per reference day.
+
+    Parameters
+    ----------
+    int_code : int
+        SGS series code, e.g. ``433`` for the IPCA.
+    dt_reference : datetime.date, optional
+        Cache key day, defaulting to today.
+    path_cache_dir : pathlib.Path, optional
+        Directory of the daily cache; defaults to a folder under the system temp directory.
+    bool_use_cache : bool, optional
+        ``False`` re-downloads even when the day's file is cached, by default ``True``.
+    fn_download : DownloadFn, optional
+        Download seam, injected by tests.
+
+    Returns
+    -------
+    pd.DataFrame
+        One row: ``code`` (int), ``name``, ``periodicity`` (source letter, e.g. ``M``) and
+        ``unit``, plus provenance columns.
+    """
+    str_url = _URL_METADATA.format(code=int_code)
+    path_raw = download_daily(
+        str_url,
+        path_cache_dir=path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache",
+        str_key=f"sgs-metadata-{int_code}",
+        dt_reference=dt_reference or date.today(),
+        str_suffix=".xml",
+        bool_use_cache=bool_use_cache,
+        fn_download=fn_download,
+    )
+    bytes_raw = path_raw.read_bytes()
+    return stamp_provenance(
+        build_metadata_frame(bytes_raw),
+        str_url=str_url,
+        cls_contract=_CONTRACT_METADATA,
+        str_content_hash=hashlib.sha256(bytes_raw).hexdigest(),
         str_package_version=resolve_package_version("opendata-bcb"),
     )

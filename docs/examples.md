@@ -140,3 +140,16 @@ from opendata_bcb import read_quote_bulletins
 df_boletins = read_quote_bulletins("61", dt_start=date(2026, 11, 10), dt_end=date(2026, 11, 19))
 print(df_boletins[["date", "buy_rate", "sell_rate"]])
 ```
+
+## Receita: metadados de uma série do SGS
+
+Lê o nome, a periodicidade e a unidade da série 433 (IPCA). A periodicidade vem como a letra
+da fonte (`M` para mensal).
+
+```python
+from opendata_bcb import read_sgs_metadata
+
+
+df_meta = read_sgs_metadata(433)
+print(df_meta[["code", "name", "periodicity", "unit"]])
+```
