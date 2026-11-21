@@ -13,7 +13,7 @@ Interface pública desta biblioteca.
 | Type hints | Obrigatórias em todas as funções públicas, inclusive o retorno `-> None` |
 | Docstrings | Estilo NumPy; explique o *porquê*, não o *quê* |
 | Nomes de variáveis | Com prefixo de tipo (`str_`, `list_`, `cls_`, `dict_`, …) |
-| Testes | `unittest`; uma asserção por teste; nome no formato `test_<unit>_<scenario>_<expected>` |
+| Testes | `pytest`; uma asserção por teste; nome no formato `test_<unit>_<scenario>_<expected>` |
 
 ---
 
