@@ -106,3 +106,88 @@ def test_read_sgs_series_stamps_sha256_of_fixture_bytes(df_values: pd.DataFrame)
     """A single-window read stamps the sha256 of the bytes it parsed."""
     _bytes_fixture = (PATH_FIXTURES / "serie_1_valores.json").read_bytes()
     assert df_values["content_hash"].iloc[0] == hashlib.sha256(_bytes_fixture).hexdigest()
+
+
+def _read_series(
+    *, cls_fake: _FakeDownload, path_cache_dir: Path | None, dt_reference: date, dt_end: date
+) -> pd.DataFrame:
+    """Read series 1 from 2026-11-01 with the given cache arguments."""
+    return sgs.read_sgs_series(
+        1,
+        dt_start=date(2026, 11, 1),
+        dt_end=dt_end,
+        dt_reference=dt_reference,
+        path_cache_dir=path_cache_dir,
+        fn_download=cls_fake,
+    )
+
+
+def test_read_sgs_series_defaults_cache_dir_under_temp(
+    *, tmp_path: Path, cls_fake: _FakeDownload, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With no cache directory, the window lands under the system temp directory."""
+    monkeypatch.setattr(sgs.tempfile, "gettempdir", lambda: str(tmp_path))
+    _read_series(
+        cls_fake=cls_fake,
+        path_cache_dir=None,
+        dt_reference=date(2026, 11, 20),
+        dt_end=date(2026, 11, 10),
+    )
+    assert len(list((tmp_path / "opendata-bcb-cache").glob("sgs-1-*.json"))) == 1
+
+
+def test_read_sgs_series_same_reference_day_hits_cache(
+    *, tmp_path: Path, cls_fake: _FakeDownload
+) -> None:
+    """A second read on the same reference day downloads nothing."""
+    _read_series(
+        cls_fake=cls_fake,
+        path_cache_dir=tmp_path,
+        dt_reference=date(2026, 11, 20),
+        dt_end=date(2026, 11, 10),
+    )
+    _read_series(
+        cls_fake=cls_fake,
+        path_cache_dir=tmp_path,
+        dt_reference=date(2026, 11, 20),
+        dt_end=date(2026, 11, 10),
+    )
+    assert len(cls_fake.list_urls) == 1
+
+
+def test_read_sgs_series_later_reference_day_downloads_again(
+    *, tmp_path: Path, cls_fake: _FakeDownload
+) -> None:
+    """A later reference day re-fetches the window, so a BCB revision is picked up."""
+    _read_series(
+        cls_fake=cls_fake,
+        path_cache_dir=tmp_path,
+        dt_reference=date(2026, 11, 20),
+        dt_end=date(2026, 11, 10),
+    )
+    _read_series(
+        cls_fake=cls_fake,
+        path_cache_dir=tmp_path,
+        dt_reference=date(2026, 11, 21),
+        dt_end=date(2026, 11, 10),
+    )
+    assert len(cls_fake.list_urls) == 2
+
+
+def test_read_sgs_series_other_end_date_misses_cache(
+    *, tmp_path: Path, cls_fake: _FakeDownload
+) -> None:
+    """Same start and day but a different end is a different window, not a cache hit."""
+    _read_series(
+        cls_fake=cls_fake,
+        path_cache_dir=tmp_path,
+        dt_reference=date(2026, 11, 20),
+        dt_end=date(2026, 11, 10),
+    )
+    _read_series(
+        cls_fake=cls_fake,
+        path_cache_dir=tmp_path,
+        dt_reference=date(2026, 11, 20),
+        dt_end=date(2026, 11, 12),
+    )
+    assert len(cls_fake.list_urls) == 2

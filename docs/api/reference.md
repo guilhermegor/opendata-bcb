@@ -56,11 +56,12 @@ de referência: duas leituras no mesmo dia baixam uma vez.
 
 Leitura de séries temporais do SGS (Sistema Gerenciador de Séries Temporais) do Banco Central.
 
-### `read_sgs_series(int_code, *, dt_start, dt_end, path_cache_dir, fn_download=..., bool_use_cache=True) -> pd.DataFrame`
+### `read_sgs_series(int_code, *, dt_start, dt_end, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
 
 Devolve `data` (`date`) e `valor` (`Decimal`), mais as colunas de proveniência. Intervalos
 maiores que 10 anos são divididos em janelas e concatenados. O valor é construído a partir do
-texto da fonte, nunca de `float`.
+texto da fonte, nunca de `float`. Cada janela fica em cache por dia de referência (hoje, por
+padrão), então uma revisão do BCB em valores passados aparece na leitura do dia seguinte.
 
 ### `read_sgs_metadata(int_code, *, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
 

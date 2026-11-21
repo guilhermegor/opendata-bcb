@@ -31,13 +31,10 @@ Lê a cotação do dólar (série 1) em um intervalo. `valor` é `Decimal`, sem 
 
 ```python
 from datetime import date
-from pathlib import Path
 
 from opendata_bcb import read_sgs_series
 
-df_dolar = read_sgs_series(
-    1, dt_start=date(2026, 11, 1), dt_end=date(2026, 11, 10), path_cache_dir=Path(".cache")
-)
+df_dolar = read_sgs_series(1, dt_start=date(2026, 11, 1), dt_end=date(2026, 11, 10))
 ```
 
 ## Receita: listar as moedas ativas na PTAX

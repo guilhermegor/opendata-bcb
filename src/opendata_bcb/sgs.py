@@ -112,11 +112,15 @@ def read_sgs_series(
     *,
     dt_start: date,
     dt_end: date,
-    path_cache_dir: Path,
-    fn_download: DownloadFn = download_file,
+    dt_reference: date | None = None,
+    path_cache_dir: Path | None = None,
     bool_use_cache: bool = True,
+    fn_download: DownloadFn = download_file,
 ) -> pd.DataFrame:
     """Read one SGS series for a date range.
+
+    Each window is cached per reference day, so a BCB revision of past values is picked up
+    on the next day's read.
 
     Parameters
     ----------
@@ -126,12 +130,14 @@ def read_sgs_series(
         First day requested.
     dt_end : datetime.date
         Last day requested (inclusive); ranges over 10 years are fetched in windows.
-    path_cache_dir : pathlib.Path
-        Directory of the daily on-disk cache.
+    dt_reference : datetime.date, optional
+        Cache key day, defaulting to today.
+    path_cache_dir : pathlib.Path, optional
+        Directory of the daily cache; defaults to a folder under the system temp directory.
+    bool_use_cache : bool, optional
+        ``False`` re-downloads even when the day's file is cached, by default ``True``.
     fn_download : DownloadFn, optional
         Download seam, injected by tests.
-    bool_use_cache : bool, optional
-        Whether to read a same-day cached window, by default ``True``.
 
     Returns
     -------
@@ -140,15 +146,17 @@ def read_sgs_series(
     """
     list_records: list[dict[str, str]] = []
     list_hashes: list[str] = []
+    path_dir = path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache"
+    dt_day = dt_reference or date.today()
     for dt_win_start, dt_win_end in _split_windows(dt_start, dt_end=dt_end):
         str_url = _URL_VALUES.format(
             code=int_code, start=f"{dt_win_start:%d/%m/%Y}", end=f"{dt_win_end:%d/%m/%Y}"
         )
         path_raw = download_daily(
             str_url,
-            path_cache_dir=path_cache_dir,
-            str_key=f"sgs-{int_code}-{dt_win_start:%Y%m%d}",
-            dt_reference=dt_win_end,
+            path_cache_dir=path_dir,
+            str_key=f"sgs-{int_code}-{dt_win_start:%Y%m%d}-{dt_win_end:%Y%m%d}",
+            dt_reference=dt_day,
             str_suffix=".json",
             bool_use_cache=bool_use_cache,
             fn_download=fn_download,
