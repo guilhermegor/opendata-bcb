@@ -40,6 +40,12 @@ def read_banks(
 ) -> pd.DataFrame:
     """Read the bank registry (STR participants) with COMPE and ISPB codes.
 
+    The frame lists the participants of the STR, the BCB reserve-transfer system, direct or
+    indirect, as published in ``ParticipantesSTR.csv``
+    (https://www.bcb.gov.br/content/estabilidadefinanceira/str1/ParticipantesSTR.csv),
+    which the BCB refreshes daily. It is not every bank in Brazil: institutions that take
+    part only in PIX are not included.
+
     Parameters
     ----------
     dt_reference : datetime.date, optional

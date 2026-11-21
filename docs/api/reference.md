@@ -56,6 +56,14 @@ Lê a lista de participantes do STR, publicada em CSV e atualizada diariamente p
 substitui o PDF legado `CODCOMPE/Tabela.pdf`, congelado em 2009 e sem ISPB; por isso não há
 dependência de leitor de PDF.
 
+!!! note "Cobertura"
+    O quadro lista apenas os participantes do STR, diretos ou indiretos, e não todos os bancos
+    do Brasil. Instituições que participam somente do PIX não aparecem.
+
+!!! warning "Quebra de paridade com o stpstone"
+    As colunas diferem das do leitor do stpstone, baseado no PDF `CODCOMPE/Tabela.pdf`: o ISPB
+    agora está disponível na fonte e o retrato de 2009 foi descartado.
+
 | Coluna | Tipo | Descrição |
 |--------|------|-----------|
 | `ispb` | `string` | ISPB com 8 dígitos (zeros à esquerda preservados) |
