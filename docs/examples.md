@@ -125,3 +125,18 @@ from opendata_bcb import read_ptax_currencies
 df_moedas = read_ptax_currencies()
 print(df_moedas[["symbol", "name", "currency_type"]])
 ```
+
+## Receita: boletins de cotação de uma moeda
+
+Lê os boletins de fechamento do dólar (código `"61"`, veja `read_quote_bulletin_codes`) em um
+período. As taxas e paridades são `Decimal`, sem perda de precisão.
+
+```python
+from datetime import date
+
+from opendata_bcb import read_quote_bulletins
+
+
+df_boletins = read_quote_bulletins("61", dt_start=date(2026, 11, 10), dt_end=date(2026, 11, 19))
+print(df_boletins[["date", "buy_rate", "sell_rate"]])
+```

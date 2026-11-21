@@ -7,6 +7,7 @@ from html.parser import HTMLParser
 import pandas as pd
 
 from opendata_bcb._internal.config.contracts import ContractError
+from opendata_bcb._internal.utils.dtypes import apply_dtypes
 from opendata_bcb._internal.utils.typing import type_checker
 
 
@@ -130,3 +131,75 @@ def build_currency_frame(list_options: list[tuple[str, str]]) -> pd.DataFrame:
         Columns ``code`` and ``name``, both strings; one row per option.
     """
     return pd.DataFrame(list_options, columns=["code", "name"], dtype="string")
+
+
+_TUPLE_BULLETIN_COLUMNS = (
+    "date",
+    "currency_code",
+    "bulletin_type",
+    "currency_symbol",
+    "buy_rate",
+    "sell_rate",
+    "buy_parity",
+    "sell_parity",
+)
+_LIST_BULLETIN_DECIMALS = ["buy_rate", "sell_rate", "buy_parity", "sell_parity"]
+
+
+@type_checker
+def build_bulletin_frame(str_csv: str) -> pd.DataFrame:
+    """Type the bulletin CSV: dates as ``date``, comma decimals as exact ``Decimal``.
+
+    The source is headerless, ``;``-separated, with the day as ``ddmmyyyy`` and rates written
+    ``5,5834``. The decimals are built from the source text (comma swapped for a point), never
+    through a float.
+
+    Parameters
+    ----------
+    str_csv : str
+        The decoded CSV artifact.
+
+    Returns
+    -------
+    pd.DataFrame
+        One row per bulletin: ``date``, ``currency_code`` (the source's quote code, text),
+        ``bulletin_type``, ``currency_symbol``, then ``buy_rate``, ``sell_rate``,
+        ``buy_parity`` and ``sell_parity`` as ``Decimal``.
+
+    Raises
+    ------
+    ContractError
+        When the artifact has no row, or a row does not carry exactly eight fields.
+    """
+    list_rows = _split_rows(str_csv)
+    _require_wellformed(list_rows)
+    df_text = pd.DataFrame(list_rows, columns=list(_TUPLE_BULLETIN_COLUMNS), dtype="string")
+    df_text["date"] = pd.to_datetime(df_text["date"], format="%d%m%Y").dt.date
+    return apply_dtypes(_commas_to_points(df_text), list_decimal_cols=_LIST_BULLETIN_DECIMALS)
+
+
+@type_checker
+def _split_rows(str_csv: str) -> list[list[str]]:
+    """Split the CSV text into non-blank rows of ``;``-separated fields."""
+    return [str_line.split(";") for str_line in str_csv.splitlines() if str_line.strip()]
+
+
+@type_checker
+def _require_wellformed(list_rows: list[list[str]]) -> None:
+    """Raise when there is no row or a row lacks the eight bulletin fields."""
+    list_bad = [
+        list_row for list_row in list_rows if len(list_row) != len(_TUPLE_BULLETIN_COLUMNS)
+    ]
+    if list_bad or not list_rows:
+        raise ContractError([f"bulletin CSV needs 8 fields per row; got {list_bad[:1]}"])
+
+
+@type_checker
+def _commas_to_points(df_text: pd.DataFrame) -> pd.DataFrame:
+    """Swap the decimal comma for a point in the rate columns, as text."""
+    return df_text.assign(
+        **{
+            str_col: df_text[str_col].str.replace(",", ".", regex=False)
+            for str_col in _LIST_BULLETIN_DECIMALS
+        }
+    )

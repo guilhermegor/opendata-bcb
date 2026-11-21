@@ -17,3 +17,20 @@ CONTRACT_QUOTE_BULLETIN_CODES = FileContract(
     ("code", "name"),
     (),
 )
+
+
+CONTRACT_QUOTE_BULLETINS = FileContract(
+    "BCB quote bulletins (closing quotes of one currency over a period)",
+    "bcb_quote_bulletins",
+    (
+        "date",
+        "currency_code",
+        "bulletin_type",
+        "currency_symbol",
+        "buy_rate",
+        "sell_rate",
+        "buy_parity",
+        "sell_parity",
+    ),
+    (),
+)

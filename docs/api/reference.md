@@ -131,6 +131,30 @@ O quadro traz ainda as colunas de proveniência (`url`, `updated_at`, `source_ke
 `package_version`, `ingestion_run_id`, `content_hash`). A página é guardada em cache por dia de
 referência.
 
+### `read_quote_bulletins(str_currency_code, *, dt_start, dt_end, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
+
+Lê os boletins de fechamento de uma moeda em um período. O formulário responde ao POST com uma
+página cujo link de CSV é um GET que leva só o código da moeda (veja `read_quote_bulletin_codes`;
+o dólar é `"61"`) e o período; o CSV é baixado direto por esse link. As taxas, escritas com vírgula
+(`5,5834`), viram `Decimal` construído a partir do texto da fonte, nunca de `float`. Levanta
+`ValueError` se `dt_start` for posterior a `dt_end` e `ContractError` se o CSV vier sem linhas ou
+com uma linha malformada.
+
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `date` | `date` | Dia do boletim |
+| `currency_code` | `string` | Código da moeda na tabela de cotações da fonte (não é o código do formulário) |
+| `bulletin_type` | `string` | Tipo do boletim (`A`, `B`, ...) |
+| `currency_symbol` | `string` | Símbolo da moeda, por exemplo `USD` |
+| `buy_rate` | `Decimal` | Taxa de compra |
+| `sell_rate` | `Decimal` | Taxa de venda |
+| `buy_parity` | `Decimal` | Paridade de compra |
+| `sell_parity` | `Decimal` | Paridade de venda |
+
+O quadro traz ainda as colunas de proveniência. O arquivo é guardado em cache por dia de
+referência (`dt_reference`, hoje por padrão), nunca por data dos dados: um período que termina hoje
+é baixado de novo amanhã.
+
 ---
 
 ## Módulo: `focus`
