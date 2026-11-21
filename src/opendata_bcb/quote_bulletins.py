@@ -22,7 +22,7 @@ from opendata_bcb._internal.config.contracts import (
 from opendata_bcb._internal.utils.daily_cache import DownloadFn, download_daily
 from opendata_bcb._internal.utils.http_downloader import download_file
 from opendata_bcb._internal.utils.provenance import (
-    hash_artifact,
+    read_artifact,
     resolve_package_version,
     stamp_provenance,
 )
@@ -88,13 +88,14 @@ def read_quote_bulletin_codes(
         bool_use_cache=bool_use_cache,
         fn_download=fn_download,
     )
-    str_html = path_html.read_text(encoding=_ENCODING_QUOTE_BULLETIN_FORM)
+    bytes_html, str_hash = read_artifact(path_html)
+    str_html = bytes_html.decode(_ENCODING_QUOTE_BULLETIN_FORM)
     df_codes = build_currency_frame(parse_currency_options(str_html))
     return stamp_provenance(
         df_codes,
         str_url=_URL_QUOTE_BULLETIN_FORM,
         cls_contract=CONTRACT_QUOTE_BULLETIN_CODES,
-        str_content_hash=hash_artifact(path_html),
+        str_content_hash=str_hash,
         str_package_version=resolve_package_version("opendata-bcb"),
     )
 
@@ -163,11 +164,12 @@ def read_quote_bulletins(
         bool_use_cache=bool_use_cache,
         fn_download=fn_download,
     )
-    df_bulletins = build_bulletin_frame(path_csv.read_text(encoding="ascii"))
+    bytes_csv, str_hash = read_artifact(path_csv)
+    df_bulletins = build_bulletin_frame(bytes_csv.decode("ascii"))
     return stamp_provenance(
         df_bulletins,
         str_url=str_url,
         cls_contract=CONTRACT_QUOTE_BULLETINS,
-        str_content_hash=hash_artifact(path_csv),
+        str_content_hash=str_hash,
         str_package_version=resolve_package_version("opendata-bcb"),
     )
