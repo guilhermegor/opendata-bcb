@@ -148,3 +148,28 @@ proveniência. Cada linha é uma observação da fonte, sem agregação: o mesmo
 referência podem aparecer mais de uma vez, distinguidos por `IndicadorDetalhe` e `baseCalculo`
 (a janela de respostas usada nas estatísticas). Levanta `ValueError` se `dt_start` for posterior
 a `dt_end`. As páginas são guardadas em cache por dia de referência.
+
+---
+
+## Módulo: `ptax`
+
+Cotações PTAX do serviço Olinda `PTAX` do Banco Central.
+
+### `read_ptax_usd_brl(*, dt_start, dt_end, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
+
+Lê as cotações de compra e venda do dólar (PTAX) em um período, via
+`CotacaoDolarPeriodo(dataInicial=, dataFinalCotacao=)` (datas enviadas como `MM-DD-AAAA`).
+Se `dt_start` for posterior a `dt_end`, levanta `ValueError`; um período sem cotações levanta
+`ContractError` em vez de devolver um quadro vazio.
+
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `buy_rate` | `Decimal` | Cotação de compra, construída a partir do texto da fonte |
+| `sell_rate` | `Decimal` | Cotação de venda, construída a partir do texto da fonte |
+| `quoted_at` | `datetime64` | Data e hora do boletim, com horário e microssegundos |
+
+Cada data traz uma linha, a cotação de fechamento, sem campo de tipo de boletim. O quadro traz
+ainda as colunas de proveniência (`url`, `updated_at`, `source_key`, `package_version`,
+`ingestion_run_id`, `content_hash`). As páginas são guardadas em cache por dia de referência
+(`dt_reference`, hoje por padrão): duas leituras no mesmo dia baixam uma vez, e um período que
+termina hoje é baixado de novo amanhã, já com as cotações publicadas depois.
