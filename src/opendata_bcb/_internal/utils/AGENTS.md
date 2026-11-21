@@ -12,9 +12,6 @@ than `import`ing a concrete logging module (e.g. `logs.py`). That keeps each sea
 its own — a consumer can drop it into their project without dragging in this library's logging
 choices — and keeps the dependency graph flat.
 
-`logs.py` (the in-repo `CreateLog` / `log_message` helper) is therefore **opt-in** at scaffold
-time. Even when present, prefer to inject it rather than import it directly.
-
 ### Reference implementation — `retry/log_emitter.py`
 
 The `retry/` package is the starting point to copy. `log_emitter.py` defines a tiny injectable
@@ -41,13 +38,10 @@ def do_work(..., cls_logger: LogEmitter | None = None) -> None:
     cls_emitter.log_message("something happened", "warning")
 ```
 
-- **Default = no injection needed.** Calling `do_work(...)` logs to stdlib; no import of
-  `logs.py`.
-- **Customise by injecting.** A caller that wants this project's `logs.py` formatting subclasses
-  `LogEmitter` (or passes a compatible object) and injects it — `do_work` never changes.
+- **Default = no injection needed.** Calling `do_work(...)` logs to stdlib.
+- **Customise by injecting.** A caller that wants its own formatting subclasses `LogEmitter`
+  (or passes a compatible object) and injects it — `do_work` never changes.
 - **The contract is the `log_message(str_message, str_level)` method**, nothing more. Keep any
   alternative emitter structurally conformant so swapping backends never touches the seam.
 
-Apply the same shape to any new helper that logs. If you opted `logs.py` in, wrap it in a
-`LogEmitter` subclass at the call site — do not re-introduce a module-level `from ... .logs
-import log_message`.
+Apply the same shape to any new helper that logs.

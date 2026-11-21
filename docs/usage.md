@@ -9,20 +9,13 @@ Exemplos de instalação e de uso desta biblioteca.
 ## Instalação
 
 ```bash
-pip install <package-name>
+pip install opendata-bcb
 ```
 
 Ou com Poetry:
 
 ```bash
-poetry add <package-name>
-```
-
-Com um extra opcional, mantenha os extras idênticos nos dois lados:
-
-```bash
-pip install "<package-name>[<extra>]"
-poetry add "<package-name>[<extra>]"
+poetry add opendata-bcb
 ```
 
 Toda linha de `pip install` tem um equivalente em Poetry.
@@ -31,10 +24,15 @@ Toda linha de `pip install` tem um equivalente em Poetry.
 
 ## Uso básico
 
-```python
-from <package_name>.main import main
+Cada leitor devolve um `pandas.DataFrame`; os valores numéricos da fonte são `Decimal`, nunca
+`float`. Veja mais receitas em [Exemplos](examples.md).
 
-main()
+```python
+from opendata_bcb import read_banks
+
+
+df_banks = read_banks()
+print(df_banks[["ispb", "compe_code", "short_name"]].head())
 ```
 
 ---

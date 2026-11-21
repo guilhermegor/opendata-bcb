@@ -20,7 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: MIT License",
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries",
 ]
@@ -39,7 +39,6 @@ purecalendars = ">=3.0.1"
 openpyxl = ">=3.1.0"
 defusedxml = ">=0.7"
 purepii-br = ">=2.0.0"
-pure-schema-regimes = ">=0.1.0,<0.2"
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = ">=0.35"
