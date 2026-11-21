@@ -1,5 +1,6 @@
 """Unit tests for the SGS metadata reader, pinned to a real WebService capture."""
 
+from datetime import date
 import hashlib
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from opendata_bcb import sgs
 
 
 PATH_FIXTURE = Path(__file__).parent.parent / "fixtures" / "sgs" / "serie_433_ultimo_valor.xml"
+DT_REFERENCE = date(2026, 11, 20)
 
 
 class _FakeDownload:
@@ -24,6 +26,12 @@ class _FakeDownload:
         self.list_urls.append(str_url)
         path_dest.write_bytes(PATH_FIXTURE.read_bytes())
         return path_dest
+
+
+def _download_return_without_declaration(*, str_url: str, path_dest: Path) -> Path:
+    """Write an envelope whose return text has no XML declaration and no series."""
+    path_dest.write_bytes(b"<e><getUltimoValorXMLReturn>&lt;x/&gt;</getUltimoValorXMLReturn></e>")
+    return path_dest
 
 
 def _download_garbage(*, str_url: str, path_dest: Path) -> Path:
@@ -41,7 +49,9 @@ def cls_fake() -> _FakeDownload:
 @pytest.fixture
 def df_meta(*, tmp_path: Path, cls_fake: _FakeDownload) -> pd.DataFrame:
     """Read series 433 through the fake seam."""
-    return sgs.read_sgs_metadata(433, path_cache_dir=tmp_path, fn_download=cls_fake)
+    return sgs.read_sgs_metadata(
+        433, path_cache_dir=tmp_path, dt_reference=DT_REFERENCE, fn_download=cls_fake
+    )
 
 
 def test_metadata_name_is_decoded(df_meta: pd.DataFrame) -> None:
@@ -83,12 +93,29 @@ def test_metadata_requests_code_url(*, df_meta: pd.DataFrame, cls_fake: _FakeDow
 
 def test_metadata_second_read_hits_cache(*, tmp_path: Path, cls_fake: _FakeDownload) -> None:
     """A same-day second read does not download again."""
-    sgs.read_sgs_metadata(433, path_cache_dir=tmp_path, fn_download=cls_fake)
-    sgs.read_sgs_metadata(433, path_cache_dir=tmp_path, fn_download=cls_fake)
+    sgs.read_sgs_metadata(
+        433, path_cache_dir=tmp_path, dt_reference=DT_REFERENCE, fn_download=cls_fake
+    )
+    sgs.read_sgs_metadata(
+        433, path_cache_dir=tmp_path, dt_reference=DT_REFERENCE, fn_download=cls_fake
+    )
     assert len(cls_fake.list_urls) == 1
 
 
 def test_metadata_rejects_response_without_series(tmp_path: Path) -> None:
     """A SOAP body without a return element is an error."""
     with pytest.raises(ValueError, match="no series"):
-        sgs.read_sgs_metadata(1, path_cache_dir=tmp_path, fn_download=_download_garbage)
+        sgs.read_sgs_metadata(
+            1, path_cache_dir=tmp_path, dt_reference=DT_REFERENCE, fn_download=_download_garbage
+        )
+
+
+def test_metadata_return_without_declaration_raises_value_error(tmp_path: Path) -> None:
+    """A return text lacking the ``?>`` declaration is still a ValueError, not an IndexError."""
+    with pytest.raises(ValueError, match="no series"):
+        sgs.read_sgs_metadata(
+            1,
+            path_cache_dir=tmp_path,
+            dt_reference=DT_REFERENCE,
+            fn_download=_download_return_without_declaration,
+        )

@@ -8,6 +8,7 @@ to an exact :class:`decimal.Decimal`, never a float.
 from __future__ import annotations
 
 from datetime import date, timedelta
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -211,10 +212,11 @@ def read_sgs_metadata(
         bool_use_cache=bool_use_cache,
         fn_download=fn_download,
     )
+    bytes_raw = path_raw.read_bytes()
     return stamp_provenance(
-        build_metadata_frame(path_raw.read_bytes()),
+        build_metadata_frame(bytes_raw),
         str_url=str_url,
         cls_contract=_CONTRACT_METADATA,
-        str_content_hash=hash_artifact(path_raw),
+        str_content_hash=hashlib.sha256(bytes_raw).hexdigest(),
         str_package_version=resolve_package_version("opendata-bcb"),
     )

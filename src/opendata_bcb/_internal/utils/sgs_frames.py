@@ -68,7 +68,7 @@ def _find_serie(bytes_response: bytes) -> Element:
         (el.text for el in cls_envelope.iter() if el.tag.endswith("Return") and el.text), None
     )
     cls_serie = (
-        None if str_inner is None else parse_xml_safely(str_inner.split("?>", 1)[1]).find("SERIE")
+        None if str_inner is None else parse_xml_safely(str_inner.split("?>", 1)[-1]).find("SERIE")
     )
     if cls_serie is None:
         raise ValueError("SGS response carries no series metadata")
