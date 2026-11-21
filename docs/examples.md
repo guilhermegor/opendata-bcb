@@ -82,3 +82,20 @@ df_codes = read_quote_bulletin_codes()
 # O código é texto: é o valor que o formulário do BCB espera, sem conversão numérica.
 print(df_codes.loc[df_codes["name"].str.contains("ZLOTY"), ["code", "name"]])
 ```
+
+## Receita: expectativas anuais do Focus
+
+Lê as expectativas de IPCA da pesquisa Focus em uma semana. As estatísticas são `Decimal`, sem
+perda de precisão, e `numeroRespondentes` é inteiro.
+
+```python
+from datetime import date
+
+from opendata_bcb import read_focus_annual_expectations
+
+
+df_ipca = read_focus_annual_expectations(
+    "IPCA", dt_start=date(2026, 11, 9), dt_end=date(2026, 11, 13)
+)
+print(df_ipca[["Data", "DataReferencia", "Mediana", "numeroRespondentes"]])
+```

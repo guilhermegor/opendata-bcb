@@ -26,6 +26,7 @@ Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, F
 
 - `read_banks`: participantes do STR (Sistema de Transferência de Reservas) do BCB.
 - `read_sgs_series`: séries temporais do SGS, com valores em `Decimal`.
+- `read_focus_annual_expectations`: expectativas anuais da pesquisa Focus, com estatísticas em `Decimal`.
 - `read_currency_codes`: tabela de códigos de moeda da PTAX, com a data de exclusão e `is_active`.
 
 Todo leitor guarda o arquivo em cache por dia e devolve as colunas de proveniência. Assinaturas e
