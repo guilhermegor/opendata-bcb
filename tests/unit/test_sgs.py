@@ -2,6 +2,7 @@
 
 from datetime import date
 from decimal import Decimal
+import hashlib
 from pathlib import Path
 
 import pandas as pd
@@ -99,3 +100,9 @@ def test_split_windows_are_contiguous() -> None:
     """The second window starts the day after the first ends."""
     list_windows = sgs._split_windows(date(2000, 1, 1), dt_end=date(2025, 1, 1))
     assert list_windows[1][0] - list_windows[0][1] == date(2000, 1, 2) - date(2000, 1, 1)
+
+
+def test_read_sgs_series_stamps_sha256_of_fixture_bytes(df_values: pd.DataFrame) -> None:
+    """A single-window read stamps the sha256 of the bytes it parsed."""
+    _bytes_fixture = (PATH_FIXTURES / "serie_1_valores.json").read_bytes()
+    assert df_values["content_hash"].iloc[0] == hashlib.sha256(_bytes_fixture).hexdigest()
