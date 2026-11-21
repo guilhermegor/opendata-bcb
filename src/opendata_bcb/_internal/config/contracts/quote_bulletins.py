@@ -25,7 +25,7 @@ CONTRACT_QUOTE_BULLETINS = FileContract(
     (
         "date",
         "currency_code",
-        "bulletin_type",
+        "currency_type",
         "currency_symbol",
         "buy_rate",
         "sell_rate",

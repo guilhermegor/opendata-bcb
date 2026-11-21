@@ -137,7 +137,7 @@ def read_quote_bulletins(
     -------
     pd.DataFrame
         One row per bulletin: ``date`` (date), ``currency_code`` (the source's quote code),
-        ``bulletin_type``, ``currency_symbol``, ``buy_rate``, ``sell_rate``, ``buy_parity``,
+        ``currency_type``, ``currency_symbol``, ``buy_rate``, ``sell_rate``, ``buy_parity``,
         ``sell_parity`` (all ``Decimal``), then the provenance columns.
 
     Raises

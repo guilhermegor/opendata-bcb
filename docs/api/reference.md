@@ -144,7 +144,7 @@ com uma linha malformada.
 |--------|------|-----------|
 | `date` | `date` | Dia do boletim |
 | `currency_code` | `string` | Código da moeda na tabela de cotações da fonte (não é o código do formulário) |
-| `bulletin_type` | `string` | Tipo do boletim (`A`, `B`, ...) |
+| `currency_type` | `string` | Tipo da moeda (`A` ou `B`), como em `read_currency_codes` |
 | `currency_symbol` | `string` | Símbolo da moeda, por exemplo `USD` |
 | `buy_rate` | `Decimal` | Taxa de compra |
 | `sell_rate` | `Decimal` | Taxa de venda |

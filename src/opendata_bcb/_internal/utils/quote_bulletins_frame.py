@@ -136,7 +136,7 @@ def build_currency_frame(list_options: list[tuple[str, str]]) -> pd.DataFrame:
 _TUPLE_BULLETIN_COLUMNS = (
     "date",
     "currency_code",
-    "bulletin_type",
+    "currency_type",
     "currency_symbol",
     "buy_rate",
     "sell_rate",
@@ -163,7 +163,7 @@ def build_bulletin_frame(str_csv: str) -> pd.DataFrame:
     -------
     pd.DataFrame
         One row per bulletin: ``date``, ``currency_code`` (the source's quote code, text),
-        ``bulletin_type``, ``currency_symbol``, then ``buy_rate``, ``sell_rate``,
+        ``currency_type``, ``currency_symbol``, then ``buy_rate``, ``sell_rate``,
         ``buy_parity`` and ``sell_parity`` as ``Decimal``.
 
     Raises
