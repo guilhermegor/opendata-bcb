@@ -4,6 +4,7 @@ from importlib.metadata import PackageNotFoundError, version
 
 from .banks import read_banks
 from .currency_codes import read_currency_codes
+from .focus import read_focus_annual_expectations
 from .main import main
 from .quote_bulletins import read_quote_bulletin_codes
 from .sgs import read_sgs_series
@@ -20,6 +21,7 @@ __all__ = [
     "main",
     "read_banks",
     "read_currency_codes",
+    "read_focus_annual_expectations",
     "read_quote_bulletin_codes",
     "read_sgs_series",
 ]

@@ -130,3 +130,21 @@ Lê as opções do `<select name="ChkMoeda">` do formulário
 O quadro traz ainda as colunas de proveniência (`url`, `updated_at`, `source_key`,
 `package_version`, `ingestion_run_id`, `content_hash`). A página é guardada em cache por dia de
 referência.
+
+---
+
+## Módulo: `focus`
+
+Expectativas anuais de mercado da pesquisa Focus (serviço Olinda `Expectativas`, entidade
+`ExpectativasMercadoAnuais`).
+
+### `read_focus_annual_expectations(str_indicator, *, dt_start, dt_end, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
+
+Filtra por `Indicador` (por exemplo `"IPCA"`) e pelo intervalo de `Data`, paginando pelo cliente
+Olinda. Devolve `Indicador`, `IndicadorDetalhe`, `Data` (`date`), `DataReferencia` (texto),
+`Media`, `Mediana`, `DesvioPadrao`, `Minimo`, `Maximo` (todos `Decimal`, construídos a partir do
+texto da fonte, nunca de `float`), `numeroRespondentes` (`int`) e `baseCalculo`, mais as colunas de
+proveniência. Cada linha é uma observação da fonte, sem agregação: o mesmo dia e o mesmo ano de
+referência podem aparecer mais de uma vez, distinguidos por `IndicadorDetalhe` e `baseCalculo`
+(a janela de respostas usada nas estatísticas). Levanta `ValueError` se `dt_start` for posterior
+a `dt_end`. As páginas são guardadas em cache por dia de referência.
