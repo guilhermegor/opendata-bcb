@@ -36,10 +36,9 @@ src/<project_name>/
     <reader>.py            # one public module per source (banks.py, sgs.py, ptax.py, ...)
     _internal/             # PRIVATE — ships in the wheel, but not a public API
         utils/             # vendored helpers (dtypes, tabular_reader, retry/, http_downloader,
-                           #   text, zip_extractor, br_identifiers, typing/)
+                           #   text, br_identifiers, typing/)
         config/            # ALL private structural declarations (one config/CLAUDE.md maps them)
             contracts/     # FileContract declarations (one per input source)
-            ports/         # private behavioural ABCs (hexagonal ports; ABCTypeCheckerMeta) — opt-in
             # schemas/     # (opt-in) Pydantic models mirroring an external standard, or the
                            #   library's own product — the ONLY home of pydantic models
                            #   (check-layer-imports allows pydantic only in config and utils);
@@ -92,17 +91,10 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
   every DataFrame on load via `apply_dtypes` (`_internal.utils.dtypes`, never pandas'
   inference), route reads through `_internal.utils.tabular_reader`, and use
   `_internal.utils.br_identifiers` for CNPJ/CPF (alphanumeric-aware for the 2026 CNPJ).
-- **No `.env`** — a distributable library has no runtime env to seed (unlike the service
-  tiers), so none is shipped. This does not block the opt-in OTLP log exporter
-  (`_internal/utils/otel_logging.py`, blueprintx#438): it reads
-  `OTEL_EXPORTER_OTLP_ENDPOINT` etc. from the **consumer's own process environment** at call
-  time — the same "the host configures the env, the library ships no file" pattern
-  `ts_lib.sh` already uses. `configure_otel_logging(logger)` is injected, never auto-run on
-  import, matching the dependency-injection rule below.
+- **No `.env`** — a distributable library has no runtime env to seed, so none is shipped.
 - **Logging via dependency injection** — never hard-import a logging backend in a helper;
   inject a logger (stdlib default), as `_internal/utils/retry/log_emitter.py`'s `LogEmitter`
-  shows. The
-  in-repo `logs.py` helper is **opt-in** at scaffold time; see `_internal/utils/CLAUDE.md`.
+  shows; see `_internal/utils/CLAUDE.md`.
 - **Every imported package is a direct dependency.** If a module `import`s a package, declare
   it in `pyproject.toml` — even when it is already installed transitively via another dep. A
   transitive presence is an accident of another package's tree and breaks silently the day that

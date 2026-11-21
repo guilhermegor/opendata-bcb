@@ -1,27 +1,22 @@
 # AGENTS.md — `_internal/config/`
 
 `config/` is the home of **every private structural declaration** — the shapes and
-interfaces the library conforms to. It holds three sub-packages, all under `_internal/`
+interfaces the library conforms to. It holds the sub-packages below, all under `_internal/`
 (they ship inside the wheel but are **not part of the public API** — consumers import the
 library's core, never `_internal`):
 
 | Sub-package | Declares | Ships |
 |-------------|----------|-------|
 | `contracts/` | `FileContract` — the columns an input file must carry | always (drop if the library never reads tabular inputs) |
-| `ports/` | private behavioural ABCs (the hexagonal *ports*) | **opt-in** — only when two macro-sections share an operation |
-| `schemas/` | direction-neutral Pydantic models, one per external standard | **opt-in** — same condition as `ports/`, or the models are the library's product |
+| `schemas/` | direction-neutral Pydantic models, one per external standard | **opt-in** — only when the models are the library's product |
 
 The organising split is **declaration vs machinery**: `config/` answers "*what shape /
 interface must this conform to?*"; `_internal/utils/` answers "*how is it done?*" (the engines:
-`tabular_reader`, `dtypes`, `typing/`). A `ports/` ABC is a behavioural contract rather than a
-pure data declaration, but it still declares a *contract to conform to*, so it lives here beside
-`contracts/`, **not** in `utils/`.
+`tabular_reader`, `dtypes`, `typing/`).
 
-⚠️ `ports/` and `schemas/` are an **opt-in tier** — a single-purpose library should carry
-**neither** (an interface with one implementation is over-abstraction). This starter ships a
-reference `ports/` seam to copy; delete it (and never add `schemas/`) unless the library really
-grows two macro-sections over a shared domain — or, for `schemas/` only, its product is the
-models themselves.
+⚠️ `schemas/` is an **opt-in tier** — a single-purpose library should not carry it unless its
+product is the models themselves. A behavioural `ports/` ABC would also live here, but this
+library has none (an interface with one implementation is over-abstraction).
 
 ## The `contracts/` sub-package
 
@@ -41,32 +36,6 @@ on a violation before types are applied).
   by ruff (`TID251`). Loaders import the instances; they never build one inline.
 
 `PTAX_USD_BRL` (`ptax_usd_brl.py`) is the first real contract — copy it per new source.
-
-## The `ports/` sub-package (opt-in)
-
-Private behavioural interfaces — the **ports** of hexagonal *ports-and-adapters*. Everything
-here is an **abstract contract**, not an implementation; consumers import the concrete adapters,
-never `_internal.config.ports`.
-
-A **port** is the abstract operation a family of concrete classes (the **adapters**) all
-implement, so callers treat any adapter polymorphically and every new variant conforms to the
-same shape. When two macro-sections share one operation (e.g. an `export`, a `read`), name that
-operation as a port here; the concrete classes are the adapters.
-
-- **One port per file** (`olinda_reader_port.py`, `submission_writer.py`, …): a module docstring plus
-  a single ABC. New shared operation → new file.
-- **`metaclass=ABCTypeCheckerMeta`** on the port gives both abstract-method enforcement (a
-  partial adapter fails at instantiation) and runtime type checking of every call.
-- **Adapters inherit the port and its metaclass** — never redeclare `metaclass` on a subclass;
-  Python inherits it (the `check_typing` hook already skips a class with bases for that reason).
-- **Generic over its value** (`Generic[T]`) when adapters differ in the value type: an adapter
-  narrows it through the type parameter rather than by re-annotating the override, keeping the
-  concrete signature Liskov-compatible.
-- `ports/__init__.py` re-exports every port so callers use one import:
-  `from <pkg>._internal.config.ports import OlindaReaderPort`.
-- Ports stay **private** — never add one to the library's public `__all__`.
-
-`OlindaReaderPort` is the first real port — every Olinda-backed reader implements it.
 
 ## `schemas/` vs `contracts/` — the boundary people get wrong
 
