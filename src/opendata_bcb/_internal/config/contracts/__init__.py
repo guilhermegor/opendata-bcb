@@ -16,6 +16,7 @@ from opendata_bcb._internal.config.contracts.ptax_currencies import PTAX_CURRENC
 from opendata_bcb._internal.config.contracts.ptax_usd_brl import PTAX_USD_BRL
 from opendata_bcb._internal.config.contracts.quote_bulletins import (
     CONTRACT_QUOTE_BULLETIN_CODES,
+    CONTRACT_QUOTE_BULLETINS,
 )
 from opendata_bcb._internal.utils.tabular_reader import (
     ContractError,
@@ -30,6 +31,7 @@ __all__ = [
     "CONTRACT_CURRENCY_CODES",
     "CONTRACT_FOCUS_ANNUAL",
     "CONTRACT_QUOTE_BULLETIN_CODES",
+    "CONTRACT_QUOTE_BULLETINS",
     "ContractError",
     "FileContract",
     "find_contract_problems",
