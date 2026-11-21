@@ -155,7 +155,7 @@ a `dt_end`. As páginas são guardadas em cache por dia de referência.
 
 Cotações PTAX do serviço Olinda `PTAX` do Banco Central.
 
-### `read_ptax_usd_brl(*, dt_start, dt_end, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
+### `read_ptax_usd_brl(*, dt_start, dt_end, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
 
 Lê as cotações de compra e venda do dólar (PTAX) em um período, via
 `CotacaoDolarPeriodo(dataInicial=, dataFinalCotacao=)` (datas enviadas como `MM-DD-AAAA`).
@@ -168,7 +168,8 @@ Se `dt_start` for posterior a `dt_end`, levanta `ValueError`; um período sem co
 | `sell_rate` | `Decimal` | Cotação de venda, construída a partir do texto da fonte |
 | `quoted_at` | `datetime64` | Data e hora do boletim, com horário e microssegundos |
 
-Um dia pode trazer mais de um boletim, então há uma linha por boletim. O quadro traz ainda as
-colunas de proveniência (`url`, `updated_at`, `source_key`, `package_version`,
-`ingestion_run_id`, `content_hash`). As páginas são guardadas em cache por dia, tendo `dt_end`
-como dia de referência.
+Cada data traz uma linha, a cotação de fechamento, sem campo de tipo de boletim. O quadro traz
+ainda as colunas de proveniência (`url`, `updated_at`, `source_key`, `package_version`,
+`ingestion_run_id`, `content_hash`). As páginas são guardadas em cache por dia de referência
+(`dt_reference`, hoje por padrão): duas leituras no mesmo dia baixam uma vez, e um período que
+termina hoje é baixado de novo amanhã, já com as cotações publicadas depois.

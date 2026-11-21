@@ -94,6 +94,7 @@ def read_ptax_usd_brl(
     *,
     dt_start: date,
     dt_end: date,
+    dt_reference: date | None = None,
     path_cache_dir: Path | None = None,
     bool_use_cache: bool = True,
     fn_download: DownloadFn = download_file,
@@ -105,11 +106,14 @@ def read_ptax_usd_brl(
     dt_start : datetime.date
         First day requested.
     dt_end : datetime.date
-        Last day requested (inclusive); also keys the daily cache.
+        Last day requested (inclusive).
+    dt_reference : datetime.date, optional
+        The day keying the daily cache; defaults to today. Not ``dt_end``: a period ending
+        today would then be served from cache, still missing its later quotes, forever.
     path_cache_dir : pathlib.Path, optional
         Directory for the daily cache; defaults to a folder under the system temp directory.
     bool_use_cache : bool, optional
-        ``False`` re-downloads even when the day's pages are cached, by default ``True``.
+        ``False`` re-downloads even when today's pages are cached, by default ``True``.
     fn_download : DownloadFn, optional
         The download seam, injected so tests never touch the network.
 
@@ -117,8 +121,8 @@ def read_ptax_usd_brl(
     -------
     pd.DataFrame
         ``buy_rate`` and ``sell_rate`` (``Decimal``), ``quoted_at`` (``datetime64``, with the
-        time of day), then the provenance columns. One row per bulletin: a day can carry
-        several.
+        time of day), then the provenance columns. One row per day: the service returns
+        the closing quote only, with no bulletin-type field.
 
     Raises
     ------
@@ -135,7 +139,7 @@ def read_ptax_usd_brl(
             "dataInicial": _olinda_date(dt_start),
             "dataFinalCotacao": _olinda_date(dt_end),
         },
-        dt_reference=dt_end,
+        dt_reference=dt_reference or date.today(),
         path_cache_dir=path_cache_dir,
         bool_use_cache=bool_use_cache,
         fn_download=fn_download,

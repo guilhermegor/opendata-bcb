@@ -2,6 +2,7 @@
 
 from datetime import date
 from decimal import Decimal
+import hashlib
 from pathlib import Path
 
 import pandas as pd
@@ -106,3 +107,23 @@ def test_read_ptax_usd_brl_reversed_range_raises(tmp_path: Path) -> None:
     """A start after the end is rejected before any download."""
     with pytest.raises(ValueError, match="is after"):
         read_ptax_usd_brl(dt_start=DT_END, dt_end=DT_START, path_cache_dir=tmp_path)
+
+
+def test_read_ptax_usd_brl_next_day_redownloads_same_period(tmp_path: Path) -> None:
+    """A period read again on a later day is fetched again, never served as final."""
+    cls_fake = _FakeDownload()
+    _read(tmp_path, cls_fake=cls_fake, dt_reference=DT_END)
+    _read(tmp_path, cls_fake=cls_fake, dt_reference=date(2026, 11, 6))
+    assert len(cls_fake.list_urls) == 2
+
+
+def test_read_ptax_usd_brl_row_count_matches_fixture_quotes(tmp_path: Path) -> None:
+    """One row per quote in the real response (count taken from the bytes)."""
+    int_expected = PATH_FIXTURE.read_bytes().count(b'"cotacaoCompra"')
+    assert len(_read(tmp_path, cls_fake=_FakeDownload())) == int_expected
+
+
+def test_read_ptax_usd_brl_pins_content_hash_of_real_artifact(tmp_path: Path) -> None:
+    """The stamped hash is that of the fixture bytes, nobody-authored."""
+    str_sha = hashlib.sha256(PATH_FIXTURE.read_bytes()).hexdigest()
+    assert _read(tmp_path, cls_fake=_FakeDownload())["content_hash"].iloc[0] == str_sha
