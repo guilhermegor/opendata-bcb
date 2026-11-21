@@ -19,7 +19,7 @@ from opendata_bcb._internal.utils.banks_frame import normalise_banks
 from opendata_bcb._internal.utils.daily_cache import DownloadFn, download_daily
 from opendata_bcb._internal.utils.http_downloader import download_file
 from opendata_bcb._internal.utils.provenance import (
-    hash_artifact,
+    read_artifact,
     resolve_package_version,
     stamp_provenance,
 )
@@ -27,7 +27,7 @@ from opendata_bcb._internal.utils.tabular_reader import read_table
 from opendata_bcb._internal.utils.typing import type_checker
 
 
-URL_BANKS = "https://www.bcb.gov.br/content/estabilidadefinanceira/str1/ParticipantesSTR.csv"
+_URL_BANKS = "https://www.bcb.gov.br/content/estabilidadefinanceira/str1/ParticipantesSTR.csv"
 
 
 @type_checker
@@ -39,6 +39,12 @@ def read_banks(
     fn_download: DownloadFn = download_file,
 ) -> pd.DataFrame:
     """Read the bank registry (STR participants) with COMPE and ISPB codes.
+
+    The frame lists the participants of the STR, the BCB reserve-transfer system, direct or
+    indirect, as published in ``ParticipantesSTR.csv``
+    (https://www.bcb.gov.br/content/estabilidadefinanceira/str1/ParticipantesSTR.csv),
+    which the BCB refreshes daily. It is not every bank in Brazil: institutions that take
+    part only in PIX are not included.
 
     Parameters
     ----------
@@ -63,7 +69,7 @@ def read_banks(
     dt_day = dt_reference or date.today()
     path_dir = path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache"
     path_csv = download_daily(
-        URL_BANKS,
+        _URL_BANKS,
         path_cache_dir=path_dir,
         str_key="bcb-banks",
         dt_reference=dt_day,
@@ -71,18 +77,20 @@ def read_banks(
         bool_use_cache=bool_use_cache,
         fn_download=fn_download,
     )
+    bytes_csv, str_hash = read_artifact(path_csv)
     df_raw = read_table(
         path_csv,
         str_sheet="",
         dict_dtypes=dict.fromkeys(CONTRACT_BANKS.tuple_required, "str"),
         cls_contract=CONTRACT_BANKS,
         str_csv_sep=",",
+        bytes_content=bytes_csv,
     )
     df_banks = normalise_banks(df_raw)
     return stamp_provenance(
         df_banks,
-        str_url=URL_BANKS,
+        str_url=_URL_BANKS,
         cls_contract=CONTRACT_BANKS,
-        str_content_hash=hash_artifact(path_csv),
+        str_content_hash=str_hash,
         str_package_version=resolve_package_version("opendata-bcb"),
     )

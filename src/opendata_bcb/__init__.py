@@ -2,10 +2,13 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
-from .ingestion.banks import read_banks
-from .ingestion.currency_codes import read_currency_codes
-from .ingestion.sgs import read_sgs_series
+from .banks import read_banks
+from .currency_codes import read_currency_codes
+from .focus import read_focus_annual_expectations
 from .main import main
+from .ptax import read_ptax_currencies, read_ptax_quotes, read_ptax_usd_brl
+from .quote_bulletins import read_quote_bulletin_codes, read_quote_bulletins
+from .sgs import read_sgs_metadata, read_sgs_series
 
 
 try:
@@ -19,5 +22,12 @@ __all__ = [
     "main",
     "read_banks",
     "read_currency_codes",
+    "read_focus_annual_expectations",
+    "read_ptax_currencies",
+    "read_ptax_quotes",
+    "read_ptax_usd_brl",
+    "read_quote_bulletin_codes",
+    "read_quote_bulletins",
+    "read_sgs_metadata",
     "read_sgs_series",
 ]

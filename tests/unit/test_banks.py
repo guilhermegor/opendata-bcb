@@ -1,6 +1,7 @@
 """Unit tests for the bank registry reader (fixture-backed, no network)."""
 
 from datetime import date
+import hashlib
 from pathlib import Path
 import shutil
 from unittest.mock import Mock
@@ -9,7 +10,7 @@ import pandas as pd
 import pytest
 
 from opendata_bcb._internal.utils.tabular_reader import ContractError
-from opendata_bcb.ingestion.banks import URL_BANKS, read_banks
+from opendata_bcb.banks import _URL_BANKS, read_banks
 
 
 PATH_FIXTURE = Path(__file__).parent.parent / "fixtures" / "banks" / "participantes_str.csv"
@@ -103,7 +104,7 @@ def test_read_banks_names_keep_accents(df_banks: pd.DataFrame) -> None:
 
 def test_read_banks_stamps_provenance_url(df_banks: pd.DataFrame) -> None:
     """Every row carries the source URL."""
-    assert df_banks["url"].unique().tolist() == [URL_BANKS]
+    assert df_banks["url"].unique().tolist() == [_URL_BANKS]
 
 
 def test_read_banks_stamps_provenance_columns(df_banks: pd.DataFrame) -> None:
@@ -123,3 +124,10 @@ def test_read_banks_missing_column_raises(tmp_path: Path) -> None:
     """A source that dropped contract columns fails loudly."""
     with pytest.raises(ContractError):
         read_banks(dt_reference=DT_DAY, path_cache_dir=tmp_path, fn_download=_broken_download)
+
+
+def test_read_banks_stamps_sha256_of_fixture_bytes(df_banks: pd.DataFrame) -> None:
+    """The stamped hash is the sha256 of the bytes the parser read."""
+    assert (
+        df_banks["content_hash"].iloc[0] == hashlib.sha256(PATH_FIXTURE.read_bytes()).hexdigest()
+    )

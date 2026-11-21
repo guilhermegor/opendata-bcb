@@ -18,7 +18,7 @@
 <!-- slug: overview -->
 ## Visão geral
 
-Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, Focus, boletins de cotações, cadastro de bancos), com cache e proveniência.
+Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, Focus, boletins de cotações, participantes do STR), com cache e proveniência.
 
 <!-- optional section: delete it when the project has no feature list -->
 <!-- slug: features -->
@@ -26,7 +26,11 @@ Pacote Python para coletar dados do Banco Central do Brasil (SGS, Olinda/PTAX, F
 
 - `read_banks`: participantes do STR (Sistema de Transferência de Reservas) do BCB.
 - `read_sgs_series`: séries temporais do SGS, com valores em `Decimal`.
+- `read_focus_annual_expectations`: expectativas anuais da pesquisa Focus, com estatísticas em `Decimal`.
 - `read_currency_codes`: tabela de códigos de moeda da PTAX, com a data de exclusão e `is_active`.
+- `read_ptax_currencies`: lista de moedas cotadas pela PTAX (símbolo, nome e tipo A/B), via Olinda.
+- `read_ptax_quotes`: cotações PTAX de uma moeda em um período (Olinda), com os boletins intradiários e `Decimal`.
+- `read_ptax_usd_brl`: cotações PTAX de compra e venda do dólar em um período (Olinda), em `Decimal`.
 
 Todo leitor guarda o arquivo em cache por dia e devolve as colunas de proveniência. Assinaturas e
 colunas em [docs/api/reference.md](docs/api/reference.md).

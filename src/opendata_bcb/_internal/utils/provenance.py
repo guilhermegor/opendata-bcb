@@ -7,9 +7,10 @@ drift-detectable: given a stored row you can answer *where it came from*, *how s
 
 The seam is deliberately split so it composes with the raw-artifact-persistence pattern:
 
-- :func:`hash_artifact` — the **I/O half**: streams a file's bytes into a ``sha256`` digest.
-  The reader (which holds the downloaded file) calls this *inside* its temp-workspace block,
-  before the workspace is torn down.
+- :func:`read_artifact` — the **I/O half**: reads a file's bytes once and returns them with
+  their ``sha256`` digest, so the reader parses and hashes the same bytes. The reader (which
+  holds the downloaded file) calls this *inside* its temp-workspace block, before the
+  workspace is torn down.
 - :func:`stamp_provenance` — the **pure half**: a frame transform with no I/O. It takes the
   already-computed content hash (and the package version) as arguments, so a reader that
   finishes building its frame *after* the workspace closes (e.g. a post-extraction merge) can
@@ -57,35 +58,32 @@ else:
         from opendata_bcb._internal.utils.typing import type_checker
 
 
-_HASH_CHUNK_BYTES = 1 << 20
-
-
 @type_checker
-def hash_artifact(path_file: Path) -> str:
-    """Return the ``sha256`` hex digest of a file's bytes, read in streamed chunks.
+def read_artifact(path_file: Path) -> tuple[bytes, str]:
+    """Read a file's bytes once and return them with their ``sha256`` hex digest.
+
+    A reader must parse and hash the *same* bytes: opening the artifact twice lets a concurrent
+    cache refresh slip in between, so the stamped hash would describe a different file than the
+    one parsed. Parse from the returned bytes, never from ``path_file`` again.
 
     Parameters
     ----------
     path_file : pathlib.Path
-        The downloaded source artifact to hash. Hash the *raw bytes on disk* (not the parsed
-        frame) so the digest is stable across parser/pandas versions and lets the lake detect a
-        changed source without re-parsing.
+        The downloaded source artifact. The *raw bytes on disk* are hashed (not the parsed
+        frame), so the digest is stable across parser/pandas versions.
 
     Returns
     -------
-    str
-        The lowercase hex ``sha256`` digest.
+    tuple[bytes, str]
+        The file's bytes and their lowercase hex ``sha256`` digest.
 
     Raises
     ------
     FileNotFoundError
         If ``path_file`` does not exist (fail fast at the read boundary).
     """
-    cls_digest = hashlib.sha256()
-    with path_file.open("rb") as fh:
-        for bytes_chunk in iter(lambda: fh.read(_HASH_CHUNK_BYTES), b""):
-            cls_digest.update(bytes_chunk)
-    return cls_digest.hexdigest()
+    bytes_raw = path_file.read_bytes()
+    return bytes_raw, hashlib.sha256(bytes_raw).hexdigest()
 
 
 @type_checker
@@ -139,7 +137,7 @@ def stamp_provenance(
         several readers share one URL (e.g. N members of one ZIP) or many datasets share a
         bronze table.
     str_content_hash : str
-        The ``sha256`` of the downloaded artifact bytes (from :func:`hash_artifact`), shared by
+        The ``sha256`` of the downloaded artifact bytes (from :func:`read_artifact`), shared by
         every row so the lake can detect a changed source without re-parsing.
     str_package_version : str
         The producing package's version (from :func:`resolve_package_version`), so rows made by
