@@ -99,3 +99,17 @@ df_ipca = read_focus_annual_expectations(
 )
 print(df_ipca[["Data", "DataReferencia", "Mediana", "numeroRespondentes"]])
 ```
+
+## Receita: PTAX dólar/real em um período
+
+As taxas são `Decimal` e `quoted_at` mantém o horário do boletim.
+
+```python
+from datetime import date
+
+from opendata_bcb import read_ptax_usd_brl
+
+
+df_ptax = read_ptax_usd_brl(dt_start=date(2026, 11, 3), dt_end=date(2026, 11, 5))
+print(df_ptax[["quoted_at", "buy_rate", "sell_rate"]])
+```
