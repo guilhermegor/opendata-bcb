@@ -12,7 +12,6 @@ from collections.abc import Callable
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
-import tempfile
 
 import pandas as pd
 
@@ -23,7 +22,7 @@ from opendata_bcb._internal.config.contracts import (
     FileContract,
 )
 from opendata_bcb._internal.olinda import fetch_frame
-from opendata_bcb._internal.utils.daily_cache import DownloadFn
+from opendata_bcb._internal.utils.daily_cache import DownloadFn, resolve_cache_dir
 from opendata_bcb._internal.utils.http_downloader import download_file
 from opendata_bcb._internal.utils.ptax_currencies_frame import normalise_ptax_currencies
 from opendata_bcb._internal.utils.ptax_frame import normalise_ptax_quotes
@@ -94,7 +93,7 @@ def _read_quotes(  # noqa: PLR0913, PLR0917 -- keyword-only reader inputs
             _STR_SERVICE,
             str_resource,
             cls_contract=cls_contract,
-            path_cache_dir=path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache",
+            path_cache_dir=resolve_cache_dir(path_cache_dir),
             dt_reference=dt_reference,
             dict_params=dict_params,
             bool_use_cache=bool_use_cache,
@@ -199,7 +198,7 @@ def read_ptax_currencies(
             _STR_SERVICE,
             "Moedas",
             cls_contract=PTAX_CURRENCIES,
-            path_cache_dir=path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache",
+            path_cache_dir=resolve_cache_dir(path_cache_dir),
             dt_reference=dt_reference or date.today(),
             bool_use_cache=bool_use_cache,
             fn_download=fn_download,

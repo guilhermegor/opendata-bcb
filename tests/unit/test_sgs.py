@@ -122,18 +122,18 @@ def _read_series(
     )
 
 
-def test_read_sgs_series_defaults_cache_dir_under_temp(
+def test_read_sgs_series_defaults_cache_dir_to_user_cache(
     *, tmp_path: Path, cls_fake: _FakeDownload, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """With no cache directory, the window lands under the system temp directory."""
-    monkeypatch.setattr(sgs.tempfile, "gettempdir", lambda: str(tmp_path))
+    """With no cache directory, the window lands in the per-user cache."""
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
     _read_series(
         cls_fake=cls_fake,
         path_cache_dir=None,
         dt_reference=date(2026, 11, 20),
         dt_end=date(2026, 11, 10),
     )
-    assert len(list((tmp_path / "opendata-bcb-cache").glob("sgs-1-*.json"))) == 1
+    assert len(list((tmp_path / "opendata-bcb").glob("sgs-1-*.json"))) == 1
 
 
 def test_read_sgs_series_same_reference_day_hits_cache(

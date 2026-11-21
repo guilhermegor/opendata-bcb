@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
-import tempfile
 from urllib.parse import quote
 
 import pandas as pd
@@ -19,7 +18,7 @@ from opendata_bcb._internal.config.contracts import (
     CONTRACT_QUOTE_BULLETIN_CODES,
     CONTRACT_QUOTE_BULLETINS,
 )
-from opendata_bcb._internal.utils.daily_cache import DownloadFn, download_daily
+from opendata_bcb._internal.utils.daily_cache import DownloadFn, download_daily, resolve_cache_dir
 from opendata_bcb._internal.utils.http_downloader import download_file
 from opendata_bcb._internal.utils.provenance import (
     read_artifact,
@@ -78,7 +77,7 @@ def read_quote_bulletin_codes(
         When the form has no currency select, or an empty one (markup change).
     """
     dt_day = dt_reference or date.today()
-    path_dir = path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache"
+    path_dir = resolve_cache_dir(path_cache_dir)
     path_html = download_daily(
         _URL_QUOTE_BULLETIN_FORM,
         path_cache_dir=path_dir,
@@ -154,7 +153,7 @@ def read_quote_bulletins(
         f"{_URL_QUOTE_BULLETIN_CSV}&ChkMoeda={quote(str_currency_code)}"
         f"&DATAINI={dt_start:%d/%m/%Y}&DATAFIM={dt_end:%d/%m/%Y}"
     )
-    path_dir = path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache"
+    path_dir = resolve_cache_dir(path_cache_dir)
     path_csv = download_daily(
         str_url,
         path_cache_dir=path_dir,

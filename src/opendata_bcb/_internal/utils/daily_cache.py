@@ -51,6 +51,118 @@ else:
         from opendata_bcb._internal.utils.typing import type_checker
 
 
+_APP_CACHE_DIRNAME = "opendata-bcb"
+_MASK_GROUP_OTHER_WRITE = 0o022
+_MODE_PRIVATE_DIR = 0o700
+
+
+@type_checker
+def resolve_cache_dir(path_cache_dir: Path | None) -> Path:
+    """Return the caller's cache directory, or the per-user default.
+
+    The default is ``$XDG_CACHE_HOME/opendata-bcb``, else ``~/.cache/opendata-bcb``. It is
+    never a fixed path under the shared temp directory: another account on the host could
+    create that first and plant files under the predictable cache names, which a read would
+    then serve as hits.
+
+    Parameters
+    ----------
+    path_cache_dir : pathlib.Path or None
+        Directory chosen by the caller; ``None`` selects the per-user default.
+
+    Returns
+    -------
+    pathlib.Path
+        The directory the daily cache uses.
+    """
+    if path_cache_dir is not None:
+        return path_cache_dir
+    str_xdg = os.environ.get("XDG_CACHE_HOME", "")
+    path_base = Path(str_xdg) if str_xdg else Path.home() / ".cache"
+    return path_base / _APP_CACHE_DIRNAME
+
+
+@type_checker
+def _require_private_dir(path_cache_dir: Path) -> None:
+    """Create the cache directory and refuse one another account could write into.
+
+    A cache entry is trusted as the source's bytes, so whoever can write the directory can
+    choose what the reader returns. On a platform without uids (Windows) the check is skipped:
+    the per-user default already lives in the user's profile.
+
+    Parameters
+    ----------
+    path_cache_dir : pathlib.Path
+        The cache directory; created with mode ``0o700`` when missing.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    PermissionError
+        If the directory belongs to another user or is writable by group or other.
+    """
+    path_cache_dir.mkdir(mode=_MODE_PRIVATE_DIR, parents=True, exist_ok=True)
+    if not hasattr(os, "getuid"):
+        return
+    _require_owned_by_current_user(path_cache_dir)
+    _require_closed_to_others(path_cache_dir)
+
+
+@type_checker
+def _require_owned_by_current_user(path_cache_dir: Path) -> None:
+    """Refuse a cache directory another uid owns.
+
+    Parameters
+    ----------
+    path_cache_dir : pathlib.Path
+        The existing cache directory.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    PermissionError
+        If the directory's owner is not the current uid.
+    """
+    int_uid = path_cache_dir.stat().st_uid
+    if int_uid != os.getuid():
+        raise PermissionError(
+            f"cache directory {path_cache_dir} belongs to uid {int_uid}, not to the "
+            "current user; refusing to read or write it"
+        )
+
+
+@type_checker
+def _require_closed_to_others(path_cache_dir: Path) -> None:
+    """Refuse a cache directory that group or other can write into.
+
+    Parameters
+    ----------
+    path_cache_dir : pathlib.Path
+        The existing cache directory.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    PermissionError
+        If the directory mode grants write to group or other.
+    """
+    int_mode = path_cache_dir.stat().st_mode
+    if int_mode & _MASK_GROUP_OTHER_WRITE:
+        raise PermissionError(
+            f"cache directory {path_cache_dir} is writable by group or other "
+            f"(mode {int_mode & 0o777:o}); refusing to read or write it"
+        )
+
+
 @type_checker
 def _is_usable_cache_entry(path_cached: Path) -> bool:
     """Return whether a cached artifact may be served as a hit.
@@ -58,6 +170,9 @@ def _is_usable_cache_entry(path_cached: Path) -> bool:
     ⚠️ A zero-byte file counts as a MISS, not a hit. ``write_bytes`` is not atomic, so an
     interrupted run can leave an empty file behind — and serving it would hand the caller a
     valid-looking path to nothing, which fails much later and far away.
+
+    A symlink is a MISS too: this module only ever publishes regular files, so a link under a
+    cache name was placed by someone else and may point anywhere.
 
     Parameters
     ----------
@@ -67,9 +182,11 @@ def _is_usable_cache_entry(path_cached: Path) -> bool:
     Returns
     -------
     bool
-        ``True`` only for an existing, non-empty file.
+        ``True`` only for an existing, non-empty regular file that is not a symlink.
     """
-    return path_cached.is_file() and path_cached.stat().st_size > 0
+    return (
+        not path_cached.is_symlink() and path_cached.is_file() and path_cached.stat().st_size > 0
+    )
 
 
 @type_checker
@@ -121,8 +238,8 @@ def download_daily(
     str_url : str
         The source URL to fetch on a miss.
     path_cache_dir : pathlib.Path
-        Directory the cached artifacts live in; created (parents included) on a miss rather
-        than assumed to exist — the archiver may not have run yet on a fresh dated folder.
+        Directory the cached artifacts live in; created (parents included, mode ``0o700``)
+        rather than assumed to exist, and refused when another account could write it.
     str_key : str
         Kebab-case source name used in the cached filename.
     dt_reference : datetime.date
@@ -143,6 +260,11 @@ def download_daily(
     pathlib.Path
         Path to the artifact for ``dt_reference``.
 
+    Raises
+    ------
+    PermissionError
+        If ``path_cache_dir`` belongs to another user or is writable by group or other.
+
     Notes
     -----
     A miss downloads into a unique staging name inside the cache directory and then renames it
@@ -161,6 +283,7 @@ def download_daily(
     "now" cannot be allowed in.
     """
     _require_reference_date(dt_reference)
+    _require_private_dir(path_cache_dir)
 
     cls_emitter: LogEmitter = cls_logger if cls_logger is not None else LogEmitter()
     path_cached = daily_cache_path(
@@ -180,7 +303,6 @@ def download_daily(
         str_message=f"daily cache {str_reason} for {str_key} ({str_day}) — downloading {str_url}",
         str_level="info",
     )
-    path_cache_dir.mkdir(parents=True, exist_ok=True)
     _download_and_publish(str_url, path_cached=path_cached, fn_download=fn_download)
     return path_cached
 

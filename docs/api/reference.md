@@ -14,6 +14,7 @@ Interface pública desta biblioteca.
 | Docstrings | Estilo NumPy; explique o *porquê*, não o *quê* |
 | Nomes de variáveis | Com prefixo de tipo (`str_`, `list_`, `cls_`, `dict_`, …) |
 | Testes | `pytest`; uma asserção por teste; nome no formato `test_<unit>_<scenario>_<expected>` |
+| Cache | `path_cache_dir=None` usa `$XDG_CACHE_HOME/opendata-bcb`, ou `~/.cache/opendata-bcb`; o diretório é criado com modo `0o700`, e um diretório de outro usuário ou com escrita para grupo/outros é recusado com `PermissionError` |
 
 ---
 
