@@ -89,7 +89,10 @@ def read_focus_annual_expectations(
     Returns
     -------
     pd.DataFrame
-        One row per survey day and reference year: ``Indicador``, ``IndicadorDetalhe``,
+        One row per source observation, not aggregated. A survey day and reference year can
+        repeat: an observation is identified by ``Data``, ``DataReferencia``,
+        ``IndicadorDetalhe`` and ``baseCalculo`` (the window of answers the statistics use).
+        Columns: ``Indicador``, ``IndicadorDetalhe``,
         ``Data`` (date), ``DataReferencia`` (str), ``Media``, ``Mediana``, ``DesvioPadrao``,
         ``Minimo``, ``Maximo`` (all ``Decimal``), ``numeroRespondentes`` (int),
         ``baseCalculo``, then the provenance columns.

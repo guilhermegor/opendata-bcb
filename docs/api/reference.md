@@ -144,5 +144,7 @@ Filtra por `Indicador` (por exemplo `"IPCA"`) e pelo intervalo de `Data`, pagina
 Olinda. Devolve `Indicador`, `IndicadorDetalhe`, `Data` (`date`), `DataReferencia` (texto),
 `Media`, `Mediana`, `DesvioPadrao`, `Minimo`, `Maximo` (todos `Decimal`, construídos a partir do
 texto da fonte, nunca de `float`), `numeroRespondentes` (`int`) e `baseCalculo`, mais as colunas de
-proveniência. Levanta `ValueError` se `dt_start` for posterior a `dt_end`. As páginas são
-guardadas em cache por dia de referência.
+proveniência. Cada linha é uma observação da fonte, sem agregação: o mesmo dia e o mesmo ano de
+referência podem aparecer mais de uma vez, distinguidos por `IndicadorDetalhe` e `baseCalculo`
+(a janela de respostas usada nas estatísticas). Levanta `ValueError` se `dt_start` for posterior
+a `dt_end`. As páginas são guardadas em cache por dia de referência.
