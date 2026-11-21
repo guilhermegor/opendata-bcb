@@ -155,6 +155,20 @@ a `dt_end`. As páginas são guardadas em cache por dia de referência.
 
 Cotações PTAX do serviço Olinda `PTAX` do Banco Central.
 
+### `read_ptax_currencies(*, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
+
+Lê a lista de moedas cotadas pela PTAX, via o recurso `Moedas` do serviço Olinda `PTAX`.
+Uma lista vazia levanta `ContractError` em vez de devolver um quadro vazio.
+
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `symbol` | `str` | Símbolo da moeda (por exemplo `EUR`) |
+| `name` | `str` | Nome da moeda, como a fonte o escreve |
+| `currency_type` | `str` | Tipo da moeda na PTAX, `A` ou `B` |
+
+O quadro traz ainda as colunas de proveniência. As páginas são guardadas em cache por dia de
+referência (`dt_reference`, hoje por padrão).
+
 ### `read_ptax_usd_brl(*, dt_start, dt_end, dt_reference=None, path_cache_dir=None, bool_use_cache=True, fn_download=...) -> pd.DataFrame`
 
 Lê as cotações de compra e venda do dólar (PTAX) em um período, via

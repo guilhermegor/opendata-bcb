@@ -15,10 +15,11 @@ import tempfile
 
 import pandas as pd
 
-from opendata_bcb._internal.config.contracts import PTAX_USD_BRL
+from opendata_bcb._internal.config.contracts import PTAX_CURRENCIES, PTAX_USD_BRL
 from opendata_bcb._internal.olinda import fetch_frame
 from opendata_bcb._internal.utils.daily_cache import DownloadFn
 from opendata_bcb._internal.utils.http_downloader import download_file
+from opendata_bcb._internal.utils.ptax_currencies_frame import normalise_ptax_currencies
 from opendata_bcb._internal.utils.ptax_frame import normalise_ptax_quotes
 from opendata_bcb._internal.utils.typing import type_checker
 
@@ -143,4 +144,49 @@ def read_ptax_usd_brl(
         path_cache_dir=path_cache_dir,
         bool_use_cache=bool_use_cache,
         fn_download=fn_download,
+    )
+
+
+@type_checker
+def read_ptax_currencies(
+    *,
+    dt_reference: date | None = None,
+    path_cache_dir: Path | None = None,
+    bool_use_cache: bool = True,
+    fn_download: DownloadFn = download_file,
+) -> pd.DataFrame:
+    """Read the list of currencies the PTAX service quotes.
+
+    Parameters
+    ----------
+    dt_reference : datetime.date, optional
+        The day keying the daily cache; defaults to today.
+    path_cache_dir : pathlib.Path, optional
+        Directory for the daily cache; defaults to a folder under the system temp directory.
+    bool_use_cache : bool, optional
+        ``False`` re-downloads even when today's pages are cached, by default ``True``.
+    fn_download : DownloadFn, optional
+        The download seam, injected so tests never touch the network.
+
+    Returns
+    -------
+    pd.DataFrame
+        ``symbol`` (currency code), ``name`` (Portuguese display name) and ``currency_type``
+        (``"A"`` or ``"B"``, the PTAX parity convention), then the provenance columns.
+
+    Raises
+    ------
+    ContractError
+        If the list is empty or the payload lacks a required field.
+    """
+    return normalise_ptax_currencies(
+        fetch_frame(
+            _STR_SERVICE,
+            "Moedas",
+            cls_contract=PTAX_CURRENCIES,
+            path_cache_dir=path_cache_dir or Path(tempfile.gettempdir()) / "opendata-bcb-cache",
+            dt_reference=dt_reference or date.today(),
+            bool_use_cache=bool_use_cache,
+            fn_download=fn_download,
+        )
     )

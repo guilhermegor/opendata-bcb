@@ -113,3 +113,15 @@ from opendata_bcb import read_ptax_usd_brl
 df_ptax = read_ptax_usd_brl(dt_start=date(2026, 11, 3), dt_end=date(2026, 11, 5))
 print(df_ptax[["quoted_at", "buy_rate", "sell_rate"]])
 ```
+
+## Receita: moedas cotadas pela PTAX
+
+Lista os símbolos, nomes e tipos (`A` ou `B`) das moedas que a PTAX cota.
+
+```python
+from opendata_bcb import read_ptax_currencies
+
+
+df_moedas = read_ptax_currencies()
+print(df_moedas[["symbol", "name", "currency_type"]])
+```
